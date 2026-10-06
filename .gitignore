@@ -1,0 +1,24 @@
+# Compiled class files
+*.class
+bin/
+target/
+
+# Log files
+*.log
+
+# Environment variables & secrets
+.env
+*.env
+.env.*
+secrets.json
+credentials.json
+
+# IDE / Editor configuration
+.idea/
+.vscode/
+*.iml
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
