@@ -2,7 +2,7 @@
 title HELPHUB - Push to GitHub
 echo ===================================================
 echo   Pushing HELPHUB to GitHub Repository
-echo   Target: https://github.com/mohandasj390-dotcom/HELPHUB.git
+echo   Target: https://github.com/Santhoshpalani4/hub.git
 echo   Branch: main
 echo ===================================================
 echo.
@@ -13,7 +13,7 @@ echo.
 if %ERRORLEVEL% equ 0 (
     echo ===================================================
     echo   [SUCCESS] Code pushed successfully to GitHub!
-    echo   You can now go back to Vercel and click Deploy!
+    echo   Repository: https://github.com/Santhoshpalani4/hub
     echo ===================================================
 ) else (
     echo ===================================================
