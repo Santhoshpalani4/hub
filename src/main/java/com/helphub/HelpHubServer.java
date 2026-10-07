@@ -179,9 +179,42 @@ public class HelpHubServer {
         teamMembers.add(createMap("id", "tm2", "team_id", "t1", "volunteer_id", "v2", "volunteer_name", "Raj Kumar", "status", "ON_THE_WAY", "arrived_at", null));
         teamMembers.add(createMap("id", "tm3", "team_id", "t1", "volunteer_id", "v3", "volunteer_name", "Santhosh V", "status", "ACCEPTED", "arrived_at", null));
 
-        // Seed Events
-        events.add(createMap("id", "ev1", "title", "Campus Mega Cleanliness & Green Drive", "organization_name", "City Tech University", "description", "NSS & Youth Red Cross annual environmental service drive.", "location", "Campus Grounds & Local Adoption Village", "event_date", "2026-10-12", "volunteers_capacity", 50, "volunteers_registered", 38, "category", "Environmental Activities"));
-        events.add(createMap("id", "ev2", "title", "Inter-College Blood Donation Camp", "organization_name", "City Tech University & Red Cross", "description", "Joint mega blood donation camp with Red Cross.", "location", "Main Auditorium Hall", "event_date", "2026-10-18", "volunteers_capacity", 100, "volunteers_registered", 72, "category", "Medical Support"));
+        // Seed Events (Within next 10 days from 2026-10-07, Venue: College Main Hall)
+        events.add(createMap(
+            "id", "ev1",
+            "title", "Campus Mega Cleanliness & Green Drive",
+            "organization_name", "City Tech University",
+            "description", "NSS & Youth Red Cross annual environmental service drive.",
+            "location", "College Main Hall",
+            "event_date", "2026-10-12",
+            "start_time", "09:00",
+            "end_time", "13:00",
+            "volunteers_capacity", 50,
+            "volunteers_registered", 38,
+            "category", "Cleanliness",
+            "organizer_name", "Prof. K. Ramesh (NSS Coordinator)",
+            "contact_info", "+91 9876543210",
+            "registration_deadline", "2026-10-11",
+            "status", "Upcoming"
+        ));
+
+        events.add(createMap(
+            "id", "ev2",
+            "title", "Inter-College Blood Donation Camp",
+            "organization_name", "City Tech University & Red Cross",
+            "description", "Joint mega blood donation camp with Red Cross.",
+            "location", "College Main Hall",
+            "event_date", "2026-10-15",
+            "start_time", "09:30",
+            "end_time", "15:30",
+            "volunteers_capacity", 100,
+            "volunteers_registered", 72,
+            "category", "Blood Donation",
+            "organizer_name", "Youth Red Cross Unit",
+            "contact_info", "+91 9876543211",
+            "registration_deadline", "2026-10-14",
+            "status", "Upcoming"
+        ));
 
         // Seed Certificates
         certificates.add(createMap("id", "cert1", "certificate_code", "CERT-HH-2026-089", "volunteer_id", "v1", "volunteer_name", "Mohan Das", "college_name", "City Tech University", "title", "Excellence in Community Volunteering", "total_hours", 42.0, "total_activities", 12, "issued_date", "2026-09-30", "qr_verification_token", "VERIFY-HELPHUB-MOHAN-850"));
@@ -624,27 +657,59 @@ public class HelpHubServer {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             addCorsHeaders(exchange);
-            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String method = exchange.getRequestMethod();
+            if ("OPTIONS".equalsIgnoreCase(method)) {
                 sendJsonResponse(exchange, 204, "");
                 return;
             }
 
-            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+            String path = exchange.getRequestURI().getPath();
+            String[] parts = path.split("/");
+
+            if ("DELETE".equalsIgnoreCase(method) || (parts.length >= 4 && "delete".equalsIgnoreCase(parts[parts.length - 1]))) {
+                String id = parts.length >= 4 ? parts[3] : "";
+                events.removeIf(e -> id.equals(e.get("id")));
+                sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"College drive deleted successfully\"}");
+                return;
+            }
+
+            if ("POST".equalsIgnoreCase(method)) {
                 String body = readBody(exchange);
                 Map<String, String> data = parseSimpleJson(body);
+
+                if (path.endsWith("/join")) {
+                    String evId = parts[3];
+                    for (Map<String, Object> ev : events) {
+                        if (evId.equals(ev.get("id"))) {
+                            int reg = Integer.parseInt(ev.getOrDefault("volunteers_registered", "0").toString());
+                            ev.put("volunteers_registered", reg + 1);
+                            break;
+                        }
+                    }
+                    sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"Successfully joined college drive\"}");
+                    return;
+                }
+
                 Map<String, Object> newEv = new HashMap<>();
                 newEv.put("id", "ev_" + System.currentTimeMillis());
-                newEv.put("title", getOrDefault(data, "title", "College Volunteer Drive"));
                 newEv.put("organization_name", getOrDefault(data, "organization_name", "City Tech University"));
-                newEv.put("description", getOrDefault(data, "description", "Student volunteering event."));
-                newEv.put("location", getOrDefault(data, "location", "College Campus"));
-                newEv.put("event_date", getOrDefault(data, "event_date", "2026-10-25"));
+                newEv.put("title", getOrDefault(data, "title", "College Volunteer Drive"));
+                newEv.put("description", getOrDefault(data, "description", "Student volunteering drive."));
+                newEv.put("event_date", getOrDefault(data, "event_date", "2026-10-16"));
+                newEv.put("start_time", getOrDefault(data, "start_time", "09:30"));
+                newEv.put("end_time", getOrDefault(data, "end_time", "13:30"));
+                newEv.put("location", getOrDefault(data, "location", "College Main Hall"));
+                newEv.put("category", getOrDefault(data, "category", "Cleanliness"));
                 newEv.put("volunteers_capacity", Integer.parseInt(getOrDefault(data, "volunteers_capacity", "50")));
-                newEv.put("volunteers_registered", 1);
-                newEv.put("category", getOrDefault(data, "category", "College Activities"));
+                newEv.put("volunteers_registered", 0);
+                newEv.put("organizer_name", getOrDefault(data, "organizer_name", "NSS Coordinator"));
+                newEv.put("contact_info", getOrDefault(data, "contact_info", "+91 9876543210"));
+                newEv.put("registration_deadline", getOrDefault(data, "registration_deadline", "2026-10-15"));
+                newEv.put("status", getOrDefault(data, "status", "Upcoming"));
+
                 events.add(0, newEv);
 
-                sendJsonResponse(exchange, 201, toJson(createMap("success", true, "message", "College event created successfully", "data", newEv)));
+                sendJsonResponse(exchange, 201, toJson(createMap("success", true, "message", "College drive created successfully", "data", newEv)));
             } else {
                 sendJsonResponse(exchange, 200, toJson(events));
             }

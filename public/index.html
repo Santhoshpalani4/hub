@@ -639,7 +639,7 @@
           <h2 class="section-title">College Volunteer Drives</h2>
           <p class="section-subtitle">Institutional events for students to earn co-curricular credits</p>
         </div>
-        <button class="btn btn-primary" onclick="App.openModal('college-event-modal')">
+        <button class="btn btn-primary" onclick="CollegeManager.openCreateDriveModal()">
           + Create College Drive
         </button>
       </div>
@@ -839,42 +839,115 @@
     </div>
   </div>
 
-  <!-- 3. CREATE COLLEGE EVENT MODAL -->
+  <!-- 3. CREATE COLLEGE EVENT MODAL (Admin Controlled) -->
   <div class="modal-overlay" id="college-event-modal">
-    <div class="modal-card">
+    <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('college-event-modal')">✕</button>
-      <h2 style="font-size:1.5rem; margin-bottom:0.5rem; color:#0f172a;">🎓 Create College Volunteer Drive</h2>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+        <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">🔒 ADMIN ACCESS</span>
+        <h2 style="font-size:1.5rem; color:#0f172a; margin:0;">🎓 Create College Volunteer Drive</h2>
+      </div>
+      <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
+        Fill in the official drive details below. Required fields are marked with <span style="color:#ef4444; font-weight:bold;">*</span>.
+      </p>
+
+      <div id="college-drive-validation-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;"></div>
       
-      <form onsubmit="event.preventDefault(); CollegeManager.createEvent(this);">
-        <div class="form-group">
-          <label>Event Title</label>
-          <input type="text" name="title" class="form-control" placeholder="e.g. Campus Annual Green Drive" required>
-        </div>
-        <div class="form-group">
-          <label>College / Institution Name</label>
-          <input type="text" name="organization_name" class="form-control" value="City Tech University" required>
-        </div>
-        <div class="form-group">
-          <label>Description</label>
-          <textarea name="description" class="form-control" rows="3" placeholder="Event description & objectives..." required></textarea>
-        </div>
-        <div class="form-group">
-          <label>Location</label>
-          <input type="text" name="location" class="form-control" value="Main Campus & Adoption Village" required>
-        </div>
+      <form id="create-college-drive-form" onsubmit="event.preventDefault(); CollegeManager.createEvent(this);">
+        <!-- 1 & 2. College Name & Title -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
-            <label>Capacity</label>
-            <input type="number" name="volunteers_capacity" class="form-control" value="50" required>
+            <label>College / Organization Name <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="organization_name" class="form-control" value="City Tech University" placeholder="e.g. City Tech University" required>
           </div>
           <div class="form-group">
-            <label>Event Date</label>
-            <input type="date" name="event_date" class="form-control" value="2026-10-18" required>
+            <label>Drive Title <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Campus Health & Hygiene Drive" required>
           </div>
         </div>
-        <button type="submit" class="btn btn-secondary" style="width:100%;">
-          PUBLISH COLLEGE DRIVE
-        </button>
+
+        <!-- 3. Drive Description -->
+        <div class="form-group">
+          <label>Drive Description <span style="color:#ef4444;">*</span></label>
+          <textarea name="description" class="form-control" rows="3" placeholder="Describe the objectives and student responsibilities..." required></textarea>
+        </div>
+
+        <!-- 4, 5, 6. Date, Start Time, End Time -->
+        <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Drive Date <span style="color:#ef4444;">*</span></label>
+            <input type="date" name="event_date" id="drive-event-date" class="form-control" min="2026-10-07" value="2026-10-14" required>
+          </div>
+          <div class="form-group">
+            <label>Start Time <span style="color:#ef4444;">*</span></label>
+            <input type="time" name="start_time" class="form-control" value="09:30" required>
+          </div>
+          <div class="form-group">
+            <label>End Time <span style="color:#ef4444;">*</span></label>
+            <input type="time" name="end_time" class="form-control" value="13:30" required>
+          </div>
+        </div>
+
+        <!-- 7 & 8. Venue & Category -->
+        <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Location / Venue <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="location" class="form-control" value="College Main Hall" placeholder="e.g. College Main Hall" required>
+          </div>
+          <div class="form-group">
+            <label>Drive Category <span style="color:#ef4444;">*</span></label>
+            <select name="category" class="form-control" required>
+              <option value="Blood Donation">🩸 Blood Donation</option>
+              <option value="Cleanliness" selected>🧹 Cleanliness</option>
+              <option value="Health Camp">🏥 Health Camp</option>
+              <option value="Environmental">🌱 Environmental</option>
+              <option value="Education">📚 Education</option>
+              <option value="Other">🤝 Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 9, 10, 11. Capacity, Organizer Name, Contact Info -->
+        <div style="display:grid; grid-template-columns:1fr 1.2fr 1.2fr; gap:1rem;">
+          <div class="form-group">
+            <label>Volunteer Capacity <span style="color:#ef4444;">*</span></label>
+            <input type="number" name="volunteers_capacity" class="form-control" min="1" max="500" value="50" required>
+          </div>
+          <div class="form-group">
+            <label>Organizer Name <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="organizer_name" class="form-control" value="Prof. K. Ramesh (NSS Coordinator)" placeholder="e.g. Prof. K. Ramesh" required>
+          </div>
+          <div class="form-group">
+            <label>Contact Information <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="contact_info" class="form-control" value="+91 9876543210" placeholder="+91 9876543210 / info@campus.edu" required>
+          </div>
+        </div>
+
+        <!-- 12 & 13. Registration Deadline & Status -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Registration Deadline <span style="color:#ef4444;">*</span></label>
+            <input type="date" name="registration_deadline" id="drive-deadline-date" class="form-control" value="2026-10-13" required>
+          </div>
+          <div class="form-group">
+            <label>Drive Status <span style="color:#ef4444;">*</span></label>
+            <select name="status" class="form-control" required>
+              <option value="Upcoming" selected>🔵 Upcoming</option>
+              <option value="Active">🟢 Active</option>
+              <option value="Completed">✅ Completed</option>
+              <option value="Cancelled">❌ Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+          <button type="button" class="btn btn-outline" style="flex:1;" onclick="App.closeModal('college-event-modal')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" style="flex:1.5; font-size:1rem;">
+            ✨ Create Drive
+          </button>
+        </div>
       </form>
     </div>
   </div>
