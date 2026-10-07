@@ -51,6 +51,7 @@ const App = {
     const nameGroup = document.getElementById('portal-name-group');
     const phoneGroup = document.getElementById('portal-phone-group');
     const deptGroup = document.getElementById('portal-dept-group');
+    const referralGroup = document.getElementById('portal-referral-group');
 
     if (this.isSignUpMode) {
       if (title) title.textContent = '📝 Volunteer & User Registration Portal';
@@ -59,6 +60,7 @@ const App = {
       if (nameGroup) nameGroup.style.display = 'block';
       if (phoneGroup) phoneGroup.style.display = 'block';
       if (deptGroup) deptGroup.style.display = 'block';
+      if (referralGroup) referralGroup.style.display = 'block';
     } else {
       if (title) title.textContent = '🔐 Volunteer & User Login Portal';
       if (btn) btn.textContent = 'Need an account? Sign Up';
@@ -66,6 +68,7 @@ const App = {
       if (nameGroup) nameGroup.style.display = 'none';
       if (phoneGroup) phoneGroup.style.display = 'none';
       if (deptGroup) deptGroup.style.display = 'none';
+      if (referralGroup) referralGroup.style.display = 'none';
     }
   },
 
@@ -83,11 +86,30 @@ const App = {
 
   async performPortalLogin() {
     this.isLoggedIn = true;
-    const name = document.getElementById('portal-name')?.value.trim() || 'Mohan Das';
     const email = document.getElementById('portal-email')?.value.trim() || 'mohan@campus.edu';
-    const phone = document.getElementById('portal-phone')?.value.trim() || '+91 9876543210';
-    const dept = document.getElementById('portal-dept')?.value.trim() || 'Computer Science & Engineering';
     const role = document.getElementById('portal-role')?.value || 'VOLUNTEER';
+    let name = document.getElementById('portal-name')?.value.trim();
+    let phone = document.getElementById('portal-phone')?.value.trim();
+    let dept = document.getElementById('portal-dept')?.value.trim();
+
+    if (!this.isSignUpMode || !name) {
+      if (email.toLowerCase().includes('mohan')) {
+        name = 'Mohan Das'; phone = '+91 9876543210'; dept = 'Computer Science & Engineering';
+      } else if (email.toLowerCase().includes('raj')) {
+        name = 'Raj Kumar'; phone = '+91 9876543211'; dept = 'Electronics & Communication';
+      } else if (email.toLowerCase().includes('santhosh')) {
+        name = 'Santhosh V'; phone = '+91 9876543212'; dept = 'Electrical Engineering';
+      } else if (email.toLowerCase().includes('arun')) {
+        name = 'Arun Prakash'; phone = '+91 9876543213'; dept = 'Mechanical Engineering';
+      } else if (email.toLowerCase().includes('priya')) {
+        name = 'Priya Sharma'; phone = '+91 9876543214'; dept = 'Sunshine NGO';
+      } else {
+        const prefix = email.split('@')[0].replace(/[._-]/g, ' ');
+        name = prefix.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Volunteer User';
+        phone = phone || '+91 9876543210';
+        dept = dept || 'University Campus';
+      }
+    }
 
     if (window.VolunteerManager) {
       VolunteerManager.currentVolunteer.name = name;
