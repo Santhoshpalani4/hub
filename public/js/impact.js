@@ -18,16 +18,23 @@ const ImpactManager = {
   },
 
   animateCounters(data) {
-    this.animateVal('stat-volunteers', 0, data.total_volunteers || 300, 1200, '+');
-    this.animateVal('stat-requests', 0, data.total_help_requests || 89, 1200, '');
-    
-    // Set 24/7 volunteer hours logged directly
-    const hoursEl = document.getElementById('stat-hours');
-    if (hoursEl) {
-      hoursEl.textContent = '24/7';
-    }
+    const vols = data.total_volunteers || 300;
+    const reqs = data.total_help_requests || 89;
+    const people = data.people_helped || 200;
 
-    this.animateVal('stat-people', 0, data.people_helped || 200, 1200, '');
+    // Synchronize Impact Analytics Page
+    this.animateVal('stat-volunteers', 0, vols, 1200, '+');
+    this.animateVal('stat-requests', 0, reqs, 1200, '');
+    const hoursEl = document.getElementById('stat-hours');
+    if (hoursEl) hoursEl.textContent = '24/7';
+    this.animateVal('stat-people', 0, people, 1200, '');
+
+    // Synchronize Home Page Hero Stats
+    this.animateVal('home-stat-volunteers', 0, vols, 1200, '+');
+    this.animateVal('home-stat-requests', 0, reqs, 1200, '');
+    const homeHoursEl = document.getElementById('home-stat-hours');
+    if (homeHoursEl) homeHoursEl.textContent = '24/7';
+    this.animateVal('home-stat-people', 0, people, 1200, '');
   },
 
   animateVal(id, start, end, duration, suffix = '') {
