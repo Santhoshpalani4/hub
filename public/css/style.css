@@ -105,17 +105,18 @@ button {
 }
 
 .nav-brand .brand-badge {
-  background: linear-gradient(135deg, var(--primary), #3b82f6);
-  color: white;
+  background: linear-gradient(135deg, #4c1d95, #6b21a8);
+  color: #ffffff;
   padding: 0.25rem 0.6rem;
   border-radius: var(--radius-sm);
   font-size: 0.75rem;
   letter-spacing: 1px;
+  font-weight: 700;
 }
 
 .nav-links {
   display: flex;
-  gap: 2rem;
+  gap: 1.25rem;
   align-items: center;
   list-style: none;
 }
@@ -124,14 +125,82 @@ button {
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--text-muted);
-  padding: 0.5rem 0.75rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--radius-sm);
   transition: var(--transition);
+  display: inline-block;
 }
 
-.nav-links a:hover, .nav-links a.active {
-  color: var(--primary);
-  background: var(--primary-light);
+/* 1. Home → Blue */
+.nav-links a[data-section="home"]:hover {
+  color: #2563eb;
+  background: #f0f7ff;
+}
+.nav-links a[data-section="home"].active {
+  color: #1d4ed8;
+  background: #eff6ff;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.18);
+}
+
+/* 2. Find Help → Green */
+.nav-links a[data-section="requests"]:hover {
+  color: #059669;
+  background: #f0fdf4;
+}
+.nav-links a[data-section="requests"].active {
+  color: #047857;
+  background: #ecfdf5;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(5, 150, 105, 0.18);
+}
+
+/* 3. Location & Map → Purple */
+.nav-links a[data-section="map"]:hover {
+  color: #7c3aed;
+  background: #faf5ff;
+}
+.nav-links a[data-section="map"].active {
+  color: #6d28d9;
+  background: #f5f3ff;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.18);
+}
+
+/* 4. Impact Analytics → Orange */
+.nav-links a[data-section="impact"]:hover {
+  color: #ea580c;
+  background: #fff7ed;
+}
+.nav-links a[data-section="impact"].active {
+  color: #c2410c;
+  background: #ffedd5;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(234, 88, 12, 0.18);
+}
+
+/* 5. College Drives → Teal */
+.nav-links a[data-section="college"]:hover {
+  color: #0d9488;
+  background: #f0fdfa;
+}
+.nav-links a[data-section="college"].active {
+  color: #0f766e;
+  background: #ccfbf1;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(13, 148, 136, 0.18);
+}
+
+/* 6. Admin Panel → Red */
+.nav-links a[data-section="admin"]:hover {
+  color: #dc2626;
+  background: #fef2f2;
+}
+.nav-links a[data-section="admin"].active {
+  color: #b91c1c;
+  background: #fee2e2;
+  font-weight: 700;
+  box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.18);
 }
 
 .nav-right {
