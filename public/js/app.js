@@ -20,8 +20,19 @@ const App = {
     if (window.AdminManager) AdminManager.init();
     if (window.CertificateManager) CertificateManager.init();
 
-    // Default Section Routing to Login Portal First
-    this.showSection('login-portal');
+    // Check existing login session
+    const savedVol = sessionStorage.getItem('helphub_current_volunteer');
+    if (savedVol) {
+      this.isLoggedIn = true;
+      const navLinks = document.querySelector('.nav-links');
+      const navRight = document.querySelector('.nav-right');
+      if (navLinks) navLinks.style.display = 'flex';
+      if (navRight) navRight.style.display = 'flex';
+      this.showSection('home');
+    } else {
+      // Default Section Routing to Login Portal First
+      this.showSection('login-portal');
+    }
   },
 
   bindNavigation() {
@@ -137,20 +148,49 @@ const App = {
 
       this.showSuccessAlert(
         `Welcome, ${res.user ? res.user.name : name}!`,
-        `Logged in successfully as <strong>${role}</strong>. Your dashboard profile is loaded.`
+        `Logged in successfully as <strong>${role}</strong>. Welcome to the HELPHUB Community.`
       );
 
-      // Open Student/Volunteer Dashboard immediately
-      this.showSection('profile');
+      if (res.member) {
+        sessionStorage.setItem('helphub_current_member', JSON.stringify(res.member));
+      }
+
+      // Redirect directly to Home page as specified
+      this.showSection('home');
+
+      // Update active nav link to Home
+      document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.remove('active');
+        if (l.getAttribute('data-section') === 'home') {
+          l.classList.add('active');
+        }
+      });
     } else {
       alert(res && res.error ? res.error : 'Login failed. Please check your credentials.');
     }
   },
 
-  logout() {
+  async logout() {
+    let email = '';
+    let id = '';
+    try {
+      const curUser = JSON.parse(sessionStorage.getItem('helphub_current_user') || '{}');
+      const curMember = JSON.parse(sessionStorage.getItem('helphub_current_member') || '{}');
+      email = curMember.email || curUser.email || '';
+      id = curMember.id || curUser.id || '';
+    } catch (e) {}
+
+    // Notify backend to update status to Offline
+    if (email || id) {
+      try {
+        await API.post('/auth/logout', { email, id });
+      } catch (e) {}
+    }
+
     this.isLoggedIn = false;
     sessionStorage.removeItem('helphub_current_volunteer');
     sessionStorage.removeItem('helphub_current_user');
+    sessionStorage.removeItem('helphub_current_member');
     const form = document.getElementById('student-volunteer-login-form');
     if (form) form.reset();
     this.showSuccessAlert('Logged Out', 'You have been safely logged out of HELPHUB.');

@@ -5,6 +5,7 @@
  */
 const AdminManager = {
   metrics: null,
+  membersData: null,
   isAuthenticated: false,
   ADMIN_KEY: 'cse@1234',
 
@@ -69,7 +70,7 @@ const AdminManager = {
       
       App.showSuccessAlert(
         '🔓 Master Admin Access Granted',
-        'Welcome, System Administrator. You have full access to database metrics, request audits, and emergency overrides.'
+        'Welcome, System Administrator. You have full access to database metrics, request audits, and registered members directory.'
       );
 
       // Navigate to Admin Section & highlight navbar
@@ -103,6 +104,27 @@ const AdminManager = {
       this.metrics = data;
       this.render();
     }
+    await this.fetchMembers();
+  },
+
+  async fetchMembers() {
+    if (!this.isAuthenticated) return;
+    const res = await API.get('/admin/members');
+    if (res && res.success) {
+      this.membersData = res;
+
+      const elTotalMembers = document.getElementById('admin-total-members');
+      const elTotalStudents = document.getElementById('admin-total-students');
+      const elTotalVols = document.getElementById('admin-total-volunteers');
+      const elActiveUsers = document.getElementById('admin-loggedin-users');
+
+      if (elTotalMembers) elTotalMembers.textContent = res.total_members !== undefined ? res.total_members : 0;
+      if (elTotalStudents) elTotalStudents.textContent = res.total_students !== undefined ? res.total_students : 0;
+      if (elTotalVols) elTotalVols.textContent = res.total_volunteers !== undefined ? res.total_volunteers : 0;
+      if (elActiveUsers) elActiveUsers.textContent = res.logged_in_users !== undefined ? res.logged_in_users : 0;
+
+      this.renderMembersTable(res.members || []);
+    }
   },
 
   render() {
@@ -119,6 +141,70 @@ const AdminManager = {
     if (elCompReq) elCompReq.textContent = this.metrics.completed_requests || 498;
 
     this.renderRequestsTable(this.metrics.requests || []);
+  },
+
+  renderMembersTable(members) {
+    const tbody = document.getElementById('admin-members-table-body');
+    if (!tbody) return;
+
+    if (!members || members.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color:#64748b;">No registered members found in database.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = members.map(m => {
+      const isOnline = (m.status || '').toLowerCase() === 'active';
+      const statusColor = isOnline ? '#10b981' : '#64748b';
+      const statusBg = isOnline ? '#ecfdf5' : '#f1f5f9';
+      const roleColor = (m.role || '').toLowerCase() === 'student' ? '#0d9488' : '#ea580c';
+      const roleBg = (m.role || '').toLowerCase() === 'student' ? '#f0fdfa' : '#fff7ed';
+
+      return `
+        <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+          <td style="padding:0.85rem 0.75rem; font-weight:800; color:#0f172a;">
+            <a href="javascript:void(0)" onclick="AdminManager.openMemberDetailsModal('${m.id || m.member_id}')" style="color:#2563eb; text-decoration:none; font-weight:800;">
+              ${m.member_id || m.id}
+            </a>
+          </td>
+          <td style="padding:0.85rem 0.75rem; font-weight:700; color:#1e293b;">
+            ${m.name}
+          </td>
+          <td style="padding:0.85rem 0.75rem; color:#475569;">
+            ${m.email}
+          </td>
+          <td style="padding:0.85rem 0.75rem; color:#64748b; font-size:0.85rem;">
+            ${m.phone || 'N/A'}
+          </td>
+          <td style="padding:0.85rem 0.75rem;">
+            <span style="background:${roleBg}; color:${roleColor}; padding:0.25rem 0.6rem; border-radius:99px; font-size:0.75rem; font-weight:800; border:1px solid ${roleColor}33;">
+              ${m.role}
+            </span>
+          </td>
+          <td style="padding:0.85rem 0.75rem; color:#64748b; font-size:0.82rem;">
+            ${m.last_login || 'Recently'}
+          </td>
+          <td style="padding:0.85rem 0.75rem;">
+            <span style="background:${statusBg}; color:${statusColor}; font-weight:800; font-size:0.75rem; padding:0.25rem 0.6rem; border-radius:99px; display:inline-flex; align-items:center; gap:0.35rem;">
+              <span style="width:6px; height:6px; border-radius:50%; background:${statusColor};"></span>
+              ${m.status || 'Offline'}
+            </span>
+          </td>
+          <td style="padding:0.85rem 0.75rem; text-align:center;">
+            <div style="display:flex; gap:0.35rem; justify-content:center;">
+              <button class="btn btn-outline" style="padding:0.3rem 0.55rem; font-size:0.75rem; font-weight:700; color:#2563eb; border-color:#93c5fd;" onclick="AdminManager.openMemberDetailsModal('${m.id || m.member_id}')" title="View Details">
+                👁️ View Details
+              </button>
+              <button class="btn btn-outline" style="padding:0.3rem 0.55rem; font-size:0.75rem; font-weight:700; color:#d97706; border-color:#fcd34d;" onclick="AdminManager.openMemberEditModal('${m.id || m.member_id}')" title="Edit Member">
+                ✏️ Edit
+              </button>
+              <button class="btn btn-outline" style="padding:0.3rem 0.55rem; font-size:0.75rem; font-weight:700; color:#ef4444; border-color:#fca5a5;" onclick="AdminManager.deleteMember('${m.id || m.member_id}')" title="Delete Member">
+                🗑️ Delete
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
   },
 
   renderRequestsTable(requests) {
@@ -377,6 +463,213 @@ const AdminManager = {
       }
     } else {
       alert(res && res.error ? res.error : 'Failed to delete request. Admin authorization required.');
+    }
+  },
+
+  async openMemberDetailsModal(memberId) {
+    if (!this.isAuthenticated) {
+      this.promptAdminPassword();
+      return;
+    }
+
+    let member = (this.membersData && this.membersData.members) ? this.membersData.members.find(m => m.id === memberId || m.member_id === memberId || m.email === memberId) : null;
+
+    if (!member) {
+      const res = await API.get(`/admin/members/${memberId}`);
+      if (res && res.member) member = res.member;
+    }
+
+    if (!member) {
+      alert('Member details could not be loaded.');
+      return;
+    }
+
+    const titleEl = document.getElementById('admin-member-view-title');
+    if (titleEl) {
+      titleEl.textContent = `[${member.member_id || member.id}] ${member.name}`;
+    }
+
+    const isOnline = (member.status || '').toLowerCase() === 'active';
+    const statusColor = isOnline ? '#10b981' : '#64748b';
+    const statusBg = isOnline ? '#ecfdf5' : '#f1f5f9';
+
+    const detailsContainer = document.getElementById('admin-member-details-content');
+    if (detailsContainer) {
+      detailsContainer.innerHTML = `
+        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1.25rem;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; flex-wrap:wrap; gap:0.5rem;">
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+              <span style="font-weight:800; font-size:1.1rem; color:#0f172a;">${member.member_id || member.id}</span>
+              <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.25rem 0.6rem; border-radius:99px;">
+                🎓 ${member.role}
+              </span>
+            </div>
+            <div>
+              <span style="background:${statusBg}; color:${statusColor}; font-weight:800; font-size:0.8rem; padding:0.25rem 0.65rem; border-radius:99px;">
+                ${isOnline ? '🟢 Logged In (Active)' : '⚪ Offline'}
+              </span>
+            </div>
+          </div>
+
+          <h3 style="font-size:1.2rem; color:#0f172a; margin-bottom:0.25rem;">${member.name}</h3>
+          <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">Registered on: <strong>${member.registration_date || 'N/A'}</strong> | Last Login: <strong>${member.last_login || 'N/A'}</strong></p>
+
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:0.85rem; font-size:0.85rem; color:#334155; margin-bottom:1.25rem; background:white; padding:1rem; border-radius:8px; border:1px solid #e2e8f0;">
+            <div>📧 <strong>Email:</strong> ${member.email}</div>
+            <div>📞 <strong>Phone:</strong> ${member.phone || 'N/A'}</div>
+            <div>🏫 <strong>College:</strong> ${member.college_name || 'City Tech University'}</div>
+            <div>🏛️ <strong>Department:</strong> ${member.department || 'Not specified'}</div>
+            <div>📅 <strong>Year of Study:</strong> ${member.year_of_study || '1st Year'}</div>
+            <div>🚨 <strong>Emergency Contact:</strong> ${member.emergency_contact || 'None listed'}</div>
+          </div>
+
+          <!-- Activity & Service Metrics -->
+          <h4 style="font-size:0.85rem; color:#64748b; font-weight:800; text-transform:uppercase; margin-bottom:0.6rem;">📊 Service & Community Statistics</h4>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(110px, 1fr)); gap:0.6rem; margin-bottom:1rem;">
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; text-align:center;">
+              <div style="font-size:1.1rem; font-weight:800; color:#2563eb;">${member.points !== undefined ? member.points : 50}</div>
+              <div style="font-size:0.7rem; color:#64748b; font-weight:700;">IMPACT POINTS</div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; text-align:center;">
+              <div style="font-size:1.1rem; font-weight:800; color:#0d9488;">${member.total_hours || 0.0} hrs</div>
+              <div style="font-size:0.7rem; color:#64748b; font-weight:700;">HOURS LOGGED</div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; text-align:center;">
+              <div style="font-size:1.1rem; font-weight:800; color:#ea580c;">${member.activities_completed || 0}</div>
+              <div style="font-size:0.7rem; color:#64748b; font-weight:700;">ACTIVITIES</div>
+            </div>
+            <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:0.6rem; text-align:center;">
+              <div style="font-size:1.1rem; font-weight:800; color:#10b981;">${member.people_helped || 0}</div>
+              <div style="font-size:0.7rem; color:#64748b; font-weight:700;">PEOPLE HELPED</div>
+            </div>
+          </div>
+
+          <div style="font-size:0.85rem; margin-bottom:0.4rem;"><strong>🛠️ Skills & Experience:</strong> <span style="color:#475569;">${member.skills || 'None specified'}</span></div>
+          <div style="font-size:0.85rem;"><strong>📝 Member Bio:</strong> <span style="color:#475569;">${member.bio || 'Dedicated community member.'}</span></div>
+        </div>
+      `;
+    }
+
+    const editBtn = document.getElementById('admin-member-view-edit-btn');
+    if (editBtn) {
+      editBtn.onclick = () => {
+        App.closeModal('admin-member-details-modal');
+        AdminManager.openMemberEditModal(member.id || member.member_id);
+      };
+    }
+
+    const delBtn = document.getElementById('admin-member-view-del-btn');
+    if (delBtn) {
+      delBtn.onclick = () => {
+        AdminManager.deleteMember(member.id || member.member_id);
+      };
+    }
+
+    App.openModal('admin-member-details-modal');
+  },
+
+  async openMemberEditModal(memberId) {
+    if (!this.isAuthenticated) {
+      this.promptAdminPassword();
+      return;
+    }
+
+    App.closeModal('admin-member-details-modal');
+
+    let member = (this.membersData && this.membersData.members) ? this.membersData.members.find(m => m.id === memberId || m.member_id === memberId || m.email === memberId) : null;
+
+    if (!member) {
+      const res = await API.get(`/admin/members/${memberId}`);
+      if (res && res.member) member = res.member;
+    }
+
+    if (!member) {
+      alert('Member details could not be loaded for editing.');
+      return;
+    }
+
+    const errContainer = document.getElementById('admin-member-edit-error');
+    if (errContainer) errContainer.style.display = 'none';
+
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.value = (val !== undefined && val !== null) ? val : '';
+    };
+
+    setVal('edit-mem-id', member.id || member.member_id);
+    setVal('edit-mem-name', member.name || '');
+    setVal('edit-mem-role', member.role || 'Volunteer');
+    setVal('edit-mem-phone', member.phone || '');
+    setVal('edit-mem-email', member.email || '');
+    setVal('edit-mem-status', member.status || 'Offline');
+    setVal('edit-mem-college', member.college_name || 'City Tech University');
+    setVal('edit-mem-department', member.department || '');
+    setVal('edit-mem-year', member.year_of_study || '1st Year');
+    setVal('edit-mem-skills', member.skills || '');
+    setVal('edit-mem-emergency', member.emergency_contact || '');
+    setVal('edit-mem-bio', member.bio || '');
+
+    App.openModal('admin-member-edit-modal');
+  },
+
+  async saveMemberEdit(form) {
+    const errContainer = document.getElementById('admin-member-edit-error');
+    if (errContainer) errContainer.style.display = 'none';
+
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((val, key) => data[key] = (typeof val === 'string' ? val.trim() : val));
+
+    if (!data.name || !data.phone) {
+      if (errContainer) {
+        errContainer.textContent = '⚠️ Please fill out all required fields (Full Name, Phone).';
+        errContainer.style.display = 'block';
+      }
+      return;
+    }
+
+    const res = await API.post(`/admin/members/${data.id}/edit`, data);
+    if (res && res.success) {
+      App.closeModal('admin-member-edit-modal');
+      App.showSuccessAlert(
+        '💾 Member Profile Updated',
+        `Member <strong>${data.name}</strong> was successfully updated by Admin.`
+      );
+
+      // Refresh Members & Metrics
+      await this.fetchMembers();
+      await this.fetchMetrics();
+    } else {
+      if (errContainer) {
+        errContainer.textContent = res && res.error ? `⚠️ ${res.error}` : '⚠️ Error saving member changes.';
+        errContainer.style.display = 'block';
+      }
+    }
+  },
+
+  async deleteMember(memberId) {
+    if (!this.isAuthenticated) {
+      this.promptAdminPassword();
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to permanently delete member [${memberId}]?`)) {
+      return;
+    }
+
+    const res = await API.post(`/admin/members/${memberId}/delete`, {});
+    if (res && res.success) {
+      App.closeModal('admin-member-details-modal');
+      App.showSuccessAlert(
+        '🗑️ Member Deleted',
+        `Member [${memberId}] has been permanently removed from the system.`
+      );
+
+      // Refresh Members & Metrics
+      await this.fetchMembers();
+      await this.fetchMetrics();
+    } else {
+      alert(res && res.error ? res.error : 'Failed to delete member. Admin authorization required.');
     }
   }
 };
