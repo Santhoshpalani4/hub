@@ -85,82 +85,74 @@ const App = {
   },
 
   async performPortalLogin() {
-    this.isLoggedIn = true;
-    const email = document.getElementById('portal-email')?.value.trim() || 'mohan@campus.edu';
-    const role = document.getElementById('portal-role')?.value || 'VOLUNTEER';
-    let name = document.getElementById('portal-name')?.value.trim();
-    let phone = document.getElementById('portal-phone')?.value.trim();
-    let dept = document.getElementById('portal-dept')?.value.trim();
+    const elName = document.getElementById('portal-name');
+    const elRole = document.getElementById('portal-role');
+    const elPhone = document.getElementById('portal-phone');
+    const elEmail = document.getElementById('portal-email');
+    const elPassword = document.getElementById('portal-password');
 
-    if (!this.isSignUpMode || !name) {
-      if (email.toLowerCase().includes('mohan')) {
-        name = 'Mohan Das'; phone = '+91 9876543210'; dept = 'Computer Science & Engineering';
-      } else if (email.toLowerCase().includes('raj')) {
-        name = 'Raj Kumar'; phone = '+91 9876543211'; dept = 'Electronics & Communication';
-      } else if (email.toLowerCase().includes('santhosh')) {
-        name = 'Santhosh V'; phone = '+91 9876543212'; dept = 'Electrical Engineering';
-      } else if (email.toLowerCase().includes('arun')) {
-        name = 'Arun Prakash'; phone = '+91 9876543213'; dept = 'Mechanical Engineering';
-      } else if (email.toLowerCase().includes('priya')) {
-        name = 'Priya Sharma'; phone = '+91 9876543214'; dept = 'Sunshine NGO';
-      } else {
-        const prefix = email.split('@')[0].replace(/[._-]/g, ' ');
-        name = prefix.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'Volunteer User';
-        phone = phone || '+91 9876543210';
-        dept = dept || 'University Campus';
-      }
+    const name = elName ? elName.value.trim() : '';
+    const role = elRole ? elRole.value.trim() : 'Volunteer';
+    const phone = elPhone ? elPhone.value.trim() : '';
+    const email = elEmail ? elEmail.value.trim() : '';
+    const password = elPassword ? elPassword.value.trim() : '';
+
+    if (!name || !phone || !email || !password) {
+      alert('Please fill out all required login fields.');
+      return;
     }
 
-    if (window.VolunteerManager) {
-      VolunteerManager.currentVolunteer.name = name;
-      VolunteerManager.currentVolunteer.email = email;
-      VolunteerManager.currentVolunteer.phone = phone;
-      VolunteerManager.currentVolunteer.department = dept;
-      VolunteerManager.currentVolunteer.role = role;
-      
-      // If newly registered, generate a unique student volunteer ID
-      if (this.isSignUpMode && !VolunteerManager.currentVolunteer.student_id) {
-        VolunteerManager.currentVolunteer.student_id = 'STU2026VOL' + Math.floor(100 + Math.random() * 900);
+    const res = await API.post('/auth/login', {
+      name,
+      role,
+      phone,
+      email,
+      password
+    });
+
+    if (res && res.success && res.volunteer) {
+      this.isLoggedIn = true;
+      sessionStorage.setItem('helphub_current_volunteer', JSON.stringify(res.volunteer));
+      if (res.user) {
+        sessionStorage.setItem('helphub_current_user', JSON.stringify(res.user));
       }
 
-      // Sync updated registration data to backend
-      try {
-        await API.post(`/volunteers/${VolunteerManager.currentVolunteer.id}`, {
-          name: name,
-          email: email,
-          phone: phone,
-          department: dept
-        });
-      } catch (err) {
-        console.warn('Backend sync note:', err);
+      if (window.VolunteerManager) {
+        VolunteerManager.currentVolunteer = res.volunteer;
+        VolunteerManager.currentUser = res.user;
+        VolunteerManager.renderProfile(res.volunteer);
       }
 
-      VolunteerManager.renderProfile(VolunteerManager.currentVolunteer);
+      // Show main navbar links & user profile
+      const navLinks = document.querySelector('.nav-links');
+      const navRight = document.querySelector('.nav-right');
+      if (navLinks) navLinks.style.display = 'flex';
+      if (navRight) navRight.style.display = 'flex';
+
+      // Update topbar user name
+      const navUserName = document.querySelector('.user-info-text .user-name');
+      const navUserRole = document.querySelector('.user-info-text .user-role');
+      if (navUserName) navUserName.textContent = res.user ? res.user.name : name;
+      if (navUserRole) navUserRole.textContent = role === 'Student' ? 'Student' : 'Student Volunteer';
+
+      this.showSuccessAlert(
+        `Welcome, ${res.user ? res.user.name : name}!`,
+        `Logged in successfully as <strong>${role}</strong>. Your dashboard profile is loaded.`
+      );
+
+      // Open Student/Volunteer Dashboard immediately
+      this.showSection('profile');
+    } else {
+      alert(res && res.error ? res.error : 'Login failed. Please check your credentials.');
     }
-
-    // Show main navbar links & user profile
-    const navLinks = document.querySelector('.nav-links');
-    const navRight = document.querySelector('.nav-right');
-    if (navLinks) navLinks.style.display = 'flex';
-    if (navRight) navRight.style.display = 'flex';
-
-    // Update topbar user name
-    const navUserName = document.querySelector('.user-info-text .user-name');
-    const navUserRole = document.querySelector('.user-info-text .user-role');
-    if (navUserName) navUserName.textContent = name;
-    if (navUserRole) navUserRole.textContent = role === 'VOLUNTEER' ? 'Student Volunteer' : role;
-
-    this.showSuccessAlert(
-      `Welcome to HELPHUB, ${name}!`,
-      `Authentication successful. You are logged in as <strong>${role}</strong>. Your profile has been automatically loaded.`
-    );
-
-    // Enter inside platform to Home page
-    this.showSection('home');
   },
 
   logout() {
     this.isLoggedIn = false;
+    sessionStorage.removeItem('helphub_current_volunteer');
+    sessionStorage.removeItem('helphub_current_user');
+    const form = document.getElementById('student-volunteer-login-form');
+    if (form) form.reset();
     this.showSuccessAlert('Logged Out', 'You have been safely logged out of HELPHUB.');
     this.showSection('login-portal');
   },

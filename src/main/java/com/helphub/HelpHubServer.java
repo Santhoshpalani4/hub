@@ -64,6 +64,7 @@ public class HelpHubServer {
 
             // Register API Handlers
             server.createContext("/api/health", new HealthHandler());
+            server.createContext("/api/auth", new AuthHandler());
             server.createContext("/api/requests", new RequestsHandler());
             server.createContext("/api/volunteers", new VolunteersHandler());
             server.createContext("/api/certificates", new CertificatesHandler());
@@ -657,6 +658,142 @@ public class HelpHubServer {
         }
     }
 
+    private static class AuthHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            addCorsHeaders(exchange);
+            if ("OPTIONS".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendJsonResponse(exchange, 204, "");
+                return;
+            }
+
+            if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+                String body = readBody(exchange);
+                System.out.println("DEBUG AUTH BODY: [" + body + "]");
+                Map<String, String> data = parseSimpleJson(body);
+                System.out.println("DEBUG AUTH DATA: " + data);
+
+                String name = getOrDefault(data, "name", "Student Volunteer");
+                String email = getOrDefault(data, "email", "user@campus.edu").toLowerCase();
+                String phone = getOrDefault(data, "phone", "");
+                String role = getOrDefault(data, "role", "VOLUNTEER");
+
+                // Find existing user by email
+                Map<String, Object> foundUser = null;
+                for (Map<String, Object> u : users.values()) {
+                    if (email.equalsIgnoreCase((String) u.get("email"))) {
+                        foundUser = u;
+                        break;
+                    }
+                }
+
+                Map<String, Object> vol = null;
+
+                if (foundUser != null) {
+                    foundUser.put("name", name);
+                    if (!phone.isEmpty()) foundUser.put("phone", phone);
+                    foundUser.put("role", role);
+
+                    // Find linked volunteer
+                    for (Map<String, Object> v : volunteers.values()) {
+                        if (foundUser.get("id").equals(v.get("user_id")) || foundUser.get("id").equals(v.get("id"))) {
+                            vol = v;
+                            break;
+                        }
+                    }
+
+                    if (vol == null) {
+                        String vId = "v_" + System.currentTimeMillis();
+                        vol = createMap(
+                            "id", vId,
+                            "user_id", foundUser.get("id"),
+                            "name", name,
+                            "email", email,
+                            "phone", phone,
+                            "student_id", "STU" + (202600 + volunteers.size() + 1),
+                            "department", "General Studies",
+                            "year_of_study", "1st Year",
+                            "role", role,
+                            "college_name", foundUser.getOrDefault("college_name", "City Tech University"),
+                            "points", 50,
+                            "total_hours", 0.0,
+                            "activities_completed", 0,
+                            "people_helped", 0,
+                            "safety_rating", 5.0,
+                            "is_available", true,
+                            "skills", "",
+                            "areas_of_interest", "",
+                            "availability", "",
+                            "preferred_categories", "",
+                            "address", "",
+                            "bio", "",
+                            "emergency_contact", "",
+                            "drives_joined", 0,
+                            "avatar", foundUser.getOrDefault("avatar", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150")
+                        );
+                        volunteers.put(vId, vol);
+                    } else {
+                        vol.put("name", name);
+                        if (!phone.isEmpty()) vol.put("phone", phone);
+                        vol.put("role", role);
+                    }
+                } else {
+                    String uId = "u_" + System.currentTimeMillis();
+                    foundUser = createMap(
+                        "id", uId,
+                        "name", name,
+                        "email", email,
+                        "phone", phone,
+                        "role", role,
+                        "college_name", "City Tech University",
+                        "avatar", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                    );
+                    users.put(uId, foundUser);
+
+                    String vId = "v_" + System.currentTimeMillis();
+                    vol = createMap(
+                        "id", vId,
+                        "user_id", uId,
+                        "name", name,
+                        "email", email,
+                        "phone", phone,
+                        "student_id", "STU" + (202600 + volunteers.size() + 1),
+                        "department", "General Studies",
+                        "year_of_study", "1st Year",
+                        "role", role,
+                        "college_name", "City Tech University",
+                        "points", 50,
+                        "total_hours", 0.0,
+                        "activities_completed", 0,
+                        "people_helped", 0,
+                        "safety_rating", 5.0,
+                        "is_available", true,
+                        "skills", "",
+                        "areas_of_interest", "",
+                        "availability", "",
+                        "preferred_categories", "",
+                        "address", "",
+                        "bio", "",
+                        "emergency_contact", "",
+                        "drives_joined", 0,
+                        "avatar", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                    );
+                    volunteers.put(vId, vol);
+                }
+
+                Map<String, Object> res = new HashMap<>();
+                res.put("success", true);
+                res.put("message", "Login successful");
+                res.put("user", foundUser);
+                res.put("volunteer", vol);
+
+                sendJsonResponse(exchange, 200, toJson(res));
+            } else {
+                sendJsonResponse(exchange, 405, "{\"error\":\"Method not allowed\"}");
+            }
+        }
+    }
+
     private static class VolunteersHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -672,39 +809,70 @@ public class HelpHubServer {
             String[] parts = path.split("/");
             if (parts.length >= 4) {
                 String vId = parts[3];
+                // Lookup by ID or user_id
                 Map<String, Object> vol = volunteers.get(vId);
+                if (vol == null) {
+                    for (Map<String, Object> v : volunteers.values()) {
+                        if (vId.equals(v.get("user_id")) || vId.equals(v.get("id"))) {
+                            vol = v;
+                            break;
+                        }
+                    }
+                }
 
                 if (vol != null) {
+                    String userId = (String) vol.get("user_id");
+                    Map<String, Object> user = users.get(userId);
+
                     if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
                         // Update Profile
                         String body = readBody(exchange);
                         Map<String, String> data = parseSimpleJson(body);
 
-                        if (data.containsKey("phone") || data.containsKey("name") || data.containsKey("email")) {
-                            Map<String, Object> user = users.get((String) vol.get("user_id"));
-                            if (user != null) {
-                                if (data.containsKey("name")) user.put("name", data.get("name"));
-                                if (data.containsKey("email")) user.put("email", data.get("email"));
-                                if (data.containsKey("phone")) user.put("phone", data.get("phone"));
-                            }
+                        if (data.containsKey("name") && !data.get("name").trim().isEmpty()) {
+                            vol.put("name", data.get("name").trim());
+                            if (user != null) user.put("name", data.get("name").trim());
+                        }
+                        if (data.containsKey("email") && !data.get("email").trim().isEmpty()) {
+                            vol.put("email", data.get("email").trim());
+                            if (user != null) user.put("email", data.get("email").trim());
+                        }
+                        if (data.containsKey("phone") && !data.get("phone").trim().isEmpty()) {
+                            vol.put("phone", data.get("phone").trim());
+                            if (user != null) user.put("phone", data.get("phone").trim());
+                        }
+                        if (data.containsKey("role") && !data.get("role").trim().isEmpty()) {
+                            vol.put("role", data.get("role").trim());
+                            if (user != null) user.put("role", data.get("role").trim());
+                        }
+                        if (data.containsKey("college_name") && !data.get("college_name").trim().isEmpty()) {
+                            vol.put("college_name", data.get("college_name").trim());
+                            if (user != null) user.put("college_name", data.get("college_name").trim());
+                        }
+                        if (data.containsKey("avatar") && !data.get("avatar").trim().isEmpty()) {
+                            vol.put("avatar", data.get("avatar").trim());
+                            if (user != null) user.put("avatar", data.get("avatar").trim());
                         }
 
-                        if (data.containsKey("department")) vol.put("department", data.get("department"));
-                        if (data.containsKey("skills")) vol.put("skills", data.get("skills"));
-                        if (data.containsKey("availability")) vol.put("availability", data.get("availability"));
-                        if (data.containsKey("address")) vol.put("address", data.get("address"));
-                        if (data.containsKey("bio")) vol.put("bio", data.get("bio"));
-                        if (data.containsKey("emergency_contact")) vol.put("emergency_contact", data.get("emergency_contact"));
+                        if (data.containsKey("department")) vol.put("department", data.get("department").trim());
+                        if (data.containsKey("year_of_study")) vol.put("year_of_study", data.get("year_of_study").trim());
+                        if (data.containsKey("skills")) vol.put("skills", data.get("skills").trim());
+                        if (data.containsKey("areas_of_interest")) vol.put("areas_of_interest", data.get("areas_of_interest").trim());
+                        if (data.containsKey("availability")) vol.put("availability", data.get("availability").trim());
+                        if (data.containsKey("preferred_categories")) vol.put("preferred_categories", data.get("preferred_categories").trim());
+                        if (data.containsKey("address")) vol.put("address", data.get("address").trim());
+                        if (data.containsKey("bio")) vol.put("bio", data.get("bio").trim());
+                        if (data.containsKey("emergency_contact")) vol.put("emergency_contact", data.get("emergency_contact").trim());
 
                         Map<String, Object> res = new HashMap<>(vol);
-                        res.put("user", users.get(vol.get("user_id")));
+                        res.put("user", user);
                         res.put("badges", badges);
                         res.put("success", true);
-                        res.put("message", "Profile updated successfully");
+                        res.put("message", "Profile updated successfully.");
                         sendJsonResponse(exchange, 200, toJson(res));
                     } else {
                         Map<String, Object> res = new HashMap<>(vol);
-                        res.put("user", users.get(vol.get("user_id")));
+                        res.put("user", user);
                         res.put("badges", badges);
                         sendJsonResponse(exchange, 200, toJson(res));
                     }
@@ -1030,22 +1198,25 @@ public class HelpHubServer {
         return "text/plain";
     }
 
-    // Lightweight JSON Parser for simple key-value objects
+    // Robust Lightweight JSON Parser for simple key-value objects
     private static Map<String, String> parseSimpleJson(String json) {
         Map<String, String> map = new HashMap<>();
         if (json == null || json.trim().isEmpty()) return map;
         String clean = json.trim();
         if (clean.startsWith("{")) clean = clean.substring(1);
         if (clean.endsWith("}")) clean = clean.substring(0, clean.length() - 1);
+        clean = clean.trim();
 
-        String[] pairs = clean.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
-        for (String pair : pairs) {
-            String[] keyValue = pair.split(":(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", 2);
-            if (keyValue.length == 2) {
-                String k = keyValue[0].trim().replaceAll("^\"|\"$", "");
-                String v = keyValue[1].trim().replaceAll("^\"|\"$", "");
-                map.put(k, v);
+        Pattern p = Pattern.compile("\"?([a-zA-Z0-9_]+)\"?\\s*:\\s*(?:\"((?:\\\\\"|[^\"])*)\"|([^,}]+))");
+        java.util.regex.Matcher m = p.matcher(clean);
+        while (m.find()) {
+            String key = m.group(1).trim();
+            String val = m.group(2) != null ? m.group(2) : (m.group(3) != null ? m.group(3).trim() : "");
+            val = val.replace("\\\"", "\"").replace("\\\\", "\\");
+            if (val.startsWith("\"") && val.endsWith("\"") && val.length() >= 2) {
+                val = val.substring(1, val.length() - 1);
             }
+            map.put(key, val.trim());
         }
         return map;
     }
