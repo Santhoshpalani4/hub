@@ -1,33 +1,86 @@
 /**
  * HELPHUB API Communication Module
- * Connects frontend client to Java REST Backend endpoints
+ * Connects frontend client to Java REST Backend endpoints with role-based auth
  */
 const API_BASE = window.location.origin.includes('http') ? `${window.location.origin}/api` : 'http://localhost:8080/api';
 
 const API = {
-  async get(endpoint) {
+  getAuthHeaders() {
+    const headers = { 'Content-Type': 'application/json' };
+    const isAdmin = (window.AdminManager && window.AdminManager.isAuthenticated) || (sessionStorage.getItem('helphub_admin_auth') === 'true');
+    if (isAdmin) {
+      headers['X-Admin-Key'] = 'cse@1234';
+      headers['Authorization'] = 'Bearer cse@1234';
+    }
+    return headers;
+  },
+
+  async get(endpoint, customHeaders = {}) {
     try {
-      const res = await fetch(`${API_BASE}${endpoint}`);
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        headers: { ...this.getAuthHeaders(), ...customHeaders }
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
       return await res.json();
     } catch (err) {
-      console.warn(`[API GET ${endpoint}] Server error or offline. Using local state.`, err);
+      console.warn(`[API GET ${endpoint}]`, err.message);
       return null;
     }
   },
 
-  async post(endpoint, data) {
+  async post(endpoint, data = {}, customHeaders = {}) {
     try {
       const res = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...this.getAuthHeaders(), ...customHeaders },
         body: JSON.stringify(data)
       });
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
       return await res.json();
     } catch (err) {
-      console.warn(`[API POST ${endpoint}] Server error or offline. Falling back.`, err);
-      return null;
+      console.warn(`[API POST ${endpoint}]`, err.message);
+      return { success: false, error: err.message };
+    }
+  },
+
+  async put(endpoint, data = {}, customHeaders = {}) {
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'PUT',
+        headers: { ...this.getAuthHeaders(), ...customHeaders },
+        body: JSON.stringify(data)
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
+      return await res.json();
+    } catch (err) {
+      console.warn(`[API PUT ${endpoint}]`, err.message);
+      return { success: false, error: err.message };
+    }
+  },
+
+  async delete(endpoint, customHeaders = {}) {
+    try {
+      const res = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'DELETE',
+        headers: { ...this.getAuthHeaders(), ...customHeaders }
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+      }
+      return await res.json();
+    } catch (err) {
+      console.warn(`[API DELETE ${endpoint}]`, err.message);
+      return { success: false, error: err.message };
     }
   }
 };

@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
  */
 public class HelpHubServer {
 
+    private static final String ADMIN_KEY = "cse@1234";
     private static final int PORT = 8080;
     private static final String PUBLIC_DIR = "public";
 
@@ -249,10 +250,26 @@ public class HelpHubServer {
                 return;
             }
 
+            String[] parts = path.split("/");
+
+            // 1. DELETE Request (DELETE /api/requests/{id} or POST /api/requests/{id}/delete)
+            if ("DELETE".equalsIgnoreCase(method) || (parts.length >= 4 && "delete".equalsIgnoreCase(parts[parts.length - 1]))) {
+                String reqId = parts.length >= 4 ? parts[3] : "";
+                handleDeleteRequest(exchange, reqId);
+                return;
+            }
+
+            // 2. EDIT Request (PUT /api/requests/{id} or POST /api/requests/{id}/edit)
+            if ("PUT".equalsIgnoreCase(method) || (parts.length >= 4 && "edit".equalsIgnoreCase(parts[parts.length - 1]))) {
+                String reqId = parts.length >= 4 ? parts[3] : "";
+                String body = readBody(exchange);
+                handleEditRequest(exchange, reqId, body);
+                return;
+            }
+
             if ("GET".equalsIgnoreCase(method)) {
                 // Check if path is /api/requests/{id}
-                String[] parts = path.split("/");
-                if (parts.length == 4) {
+                if (parts.length >= 4 && !parts[3].isEmpty()) {
                     String reqId = parts[3];
                     Map<String, Object> found = findHelpRequest(reqId);
                     if (found != null) {
@@ -290,6 +307,95 @@ public class HelpHubServer {
                 }
             }
         }
+    }
+
+    private static void handleDeleteRequest(HttpExchange exchange, String reqId) throws IOException {
+        if (!isAuthorizedAdmin(exchange)) {
+            sendJsonResponse(exchange, 403, "{\"success\":false,\"error\":\"Forbidden: Admin privileges required to delete requests.\"}");
+            return;
+        }
+
+        Map<String, Object> req = findHelpRequest(reqId);
+        if (req == null) {
+            sendJsonResponse(exchange, 404, "{\"success\":false,\"error\":\"Help request not found.\"}");
+            return;
+        }
+
+        String targetId = (String) req.get("id");
+        helpRequests.removeIf(r -> targetId.equals(r.get("id")));
+        teams.remove(targetId);
+        notifications.removeIf(n -> targetId.equals(n.get("related_request_id")));
+
+        sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"Help request deleted successfully.\"}");
+    }
+
+    private static void handleEditRequest(HttpExchange exchange, String reqId, String body) throws IOException {
+        if (!isAuthorizedAdmin(exchange)) {
+            sendJsonResponse(exchange, 403, "{\"success\":false,\"error\":\"Forbidden: Admin privileges required to edit requests.\"}");
+            return;
+        }
+
+        Map<String, Object> req = findHelpRequest(reqId);
+        if (req == null) {
+            sendJsonResponse(exchange, 404, "{\"success\":false,\"error\":\"Help request not found.\"}");
+            return;
+        }
+
+        Map<String, String> data = parseSimpleJson(body);
+
+        if (data.containsKey("title") && !data.get("title").trim().isEmpty()) {
+            req.put("title", data.get("title").trim());
+        }
+        if (data.containsKey("description") && !data.get("description").trim().isEmpty()) {
+            req.put("description", data.get("description").trim());
+        }
+        if (data.containsKey("category") && !data.get("category").trim().isEmpty()) {
+            req.put("category", data.get("category").trim());
+        }
+        if (data.containsKey("location_name") && !data.get("location_name").trim().isEmpty()) {
+            req.put("location_name", data.get("location_name").trim());
+        }
+        if (data.containsKey("priority") && !data.get("priority").trim().isEmpty()) {
+            String p = data.get("priority").trim().toUpperCase();
+            req.put("priority", p);
+            req.put("is_emergency", "EMERGENCY".equalsIgnoreCase(p));
+        }
+        if (data.containsKey("is_emergency")) {
+            req.put("is_emergency", "true".equalsIgnoreCase(data.get("is_emergency")));
+        }
+        if (data.containsKey("status") && !data.get("status").trim().isEmpty()) {
+            req.put("status", data.get("status").trim().toUpperCase());
+        }
+        if (data.containsKey("contact_number") && !data.get("contact_number").trim().isEmpty()) {
+            req.put("contact_number", data.get("contact_number").trim());
+        }
+        if (data.containsKey("requester_name") && !data.get("requester_name").trim().isEmpty()) {
+            req.put("requester_name", data.get("requester_name").trim());
+        }
+        if (data.containsKey("volunteers_needed")) {
+            try {
+                req.put("volunteers_needed", Integer.parseInt(data.get("volunteers_needed").trim()));
+            } catch (Exception ignored) {}
+        }
+        if (data.containsKey("assigned_volunteer")) {
+            String assigned = data.get("assigned_volunteer").trim();
+            req.put("assigned_volunteer", assigned);
+            String tId = (String) req.get("id");
+            Map<String, Object> team = teams.get(tId);
+            if (team == null && !assigned.isEmpty()) {
+                team = createMap("id", "t_" + System.currentTimeMillis(), "team_code", "TEAM-" + req.get("request_code"), "help_request_id", tId, "assigned_to", assigned, "created_at", LocalDateTime.now().toString());
+                teams.put(tId, team);
+            } else if (team != null) {
+                team.put("assigned_to", assigned);
+            }
+        }
+
+        Map<String, Object> res = new HashMap<>();
+        res.put("success", true);
+        res.put("message", "Help request updated successfully.");
+        res.put("data", req);
+
+        sendJsonResponse(exchange, 200, toJson(res));
     }
 
     private static void handleCreateRequest(HttpExchange exchange, String body) throws IOException {
@@ -667,6 +773,10 @@ public class HelpHubServer {
             String[] parts = path.split("/");
 
             if ("DELETE".equalsIgnoreCase(method) || (parts.length >= 4 && "delete".equalsIgnoreCase(parts[parts.length - 1]))) {
+                if (!isAuthorizedAdmin(exchange)) {
+                    sendJsonResponse(exchange, 403, "{\"success\":false,\"error\":\"Forbidden: Admin privileges required.\"}");
+                    return;
+                }
                 String id = parts.length >= 4 ? parts[3] : "";
                 events.removeIf(e -> id.equals(e.get("id")));
                 sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"College drive deleted successfully\"}");
@@ -687,6 +797,11 @@ public class HelpHubServer {
                         }
                     }
                     sendJsonResponse(exchange, 200, "{\"success\":true,\"message\":\"Successfully joined college drive\"}");
+                    return;
+                }
+
+                if (!isAuthorizedAdmin(exchange)) {
+                    sendJsonResponse(exchange, 403, "{\"success\":false,\"error\":\"Forbidden: Admin privileges required to publish college drives.\"}");
                     return;
                 }
 
@@ -886,10 +1001,22 @@ public class HelpHubServer {
         }
     }
 
+    private static boolean isAuthorizedAdmin(HttpExchange exchange) {
+        if (exchange == null) return false;
+        String adminKey = exchange.getRequestHeaders().getFirst("X-Admin-Key");
+        String auth = exchange.getRequestHeaders().getFirst("Authorization");
+        String query = exchange.getRequestURI() != null ? exchange.getRequestURI().getQuery() : null;
+
+        if (ADMIN_KEY.equals(adminKey)) return true;
+        if (auth != null && (auth.equals(ADMIN_KEY) || auth.equalsIgnoreCase("Bearer " + ADMIN_KEY))) return true;
+        if (query != null && query.contains("admin_key=" + ADMIN_KEY)) return true;
+        return false;
+    }
+
     private static void addCorsHeaders(HttpExchange exchange) {
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
         exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Admin-Key");
     }
 
     private static String getContentType(String filename) {

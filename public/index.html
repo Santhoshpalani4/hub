@@ -703,6 +703,7 @@
               <th style="padding:0.75rem;">Location</th>
               <th style="padding:0.75rem;">Priority</th>
               <th style="padding:0.75rem;">Status</th>
+              <th style="padding:0.75rem; text-align:center;">Actions</th>
             </tr>
           </thead>
           <tbody id="admin-requests-table-body">
@@ -952,7 +953,153 @@
     </div>
   </div>
 
-  <!-- 4. CUSTOM ALERT / CONFIRM / CERTIFICATE MODAL CONTAINER -->
+  <!-- 4. ADMIN VIEW REQUEST DETAILS MODAL -->
+  <div class="modal-overlay" id="admin-view-modal">
+    <div class="modal-card" style="max-width:650px; max-height:90vh; overflow-y:auto;">
+      <button class="modal-close-btn" onclick="App.closeModal('admin-view-modal')">✕</button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+        <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">🛡️ ADMIN INSPECTOR</span>
+        <h2 style="font-size:1.4rem; color:#0f172a; margin:0;" id="admin-view-title">Request Details</h2>
+      </div>
+      <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
+        Full system metadata and real-time response status for this request.
+      </p>
+
+      <div id="admin-view-details-content" style="display:flex; flex-direction:column; gap:1rem;">
+        <!-- Injected dynamically via AdminManager.openViewModal -->
+      </div>
+
+      <div style="display:flex; gap:0.75rem; margin-top:1.5rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
+        <button type="button" class="btn btn-outline" style="flex:1;" onclick="App.closeModal('admin-view-modal')">
+          Close
+        </button>
+        <button type="button" id="admin-view-edit-btn" class="btn btn-secondary" style="flex:1.2; background:#2563eb; color:white; border:none;">
+          ✏️ Edit Request
+        </button>
+        <button type="button" id="admin-view-del-btn" class="btn btn-outline" style="flex:1; color:#ef4444; border-color:#fca5a5;">
+          🗑️ Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. ADMIN EDIT REQUEST MODAL -->
+  <div class="modal-overlay" id="admin-edit-modal">
+    <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
+      <button class="modal-close-btn" onclick="App.closeModal('admin-edit-modal')">✕</button>
+      <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
+        <span style="background:#fef3c7; color:#d97706; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️ ADMIN OVERRIDE</span>
+        <h2 style="font-size:1.4rem; color:#0f172a; margin:0;">Edit Help Request</h2>
+      </div>
+      <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
+        Modify request properties, assign volunteers, or update resolution status.
+      </p>
+
+      <div id="admin-edit-validation-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;"></div>
+
+      <form id="admin-edit-request-form" onsubmit="event.preventDefault(); AdminManager.saveEditRequest(this);">
+        <input type="hidden" name="id" id="edit-req-id">
+
+        <div class="form-group">
+          <label>Request Title <span style="color:#ef4444;">*</span></label>
+          <input type="text" name="title" id="edit-req-title" class="form-control" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Category <span style="color:#ef4444;">*</span></label>
+            <select name="category" id="edit-req-category" class="form-control" required>
+              <option value="Medical Support">🏥 Medical Support</option>
+              <option value="Blood Donation">🩸 Blood Donation</option>
+              <option value="Elderly Assistance">👴 Elderly Assistance</option>
+              <option value="Education Support">📚 Education Support</option>
+              <option value="Food Distribution">🍱 Food Distribution</option>
+              <option value="Environmental Activities">🌱 Environmental Activities</option>
+              <option value="Accessibility Assistance">♿ Accessibility Assistance</option>
+              <option value="Emergency Support">🚨 Emergency Support</option>
+              <option value="College Activities">🎓 College Activities</option>
+              <option value="Other Social Help">🤝 Other Social Help</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Location / Address <span style="color:#ef4444;">*</span></label>
+            <input type="text" name="location_name" id="edit-req-location" class="form-control" required>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Priority <span style="color:#ef4444;">*</span></label>
+            <select name="priority" id="edit-req-priority" class="form-control" required>
+              <option value="EMERGENCY">🚨 EMERGENCY</option>
+              <option value="HIGH">🔴 HIGH</option>
+              <option value="NORMAL">🟡 NORMAL</option>
+              <option value="LOW">🟢 LOW</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Emergency Status <span style="color:#ef4444;">*</span></label>
+            <select name="is_emergency" id="edit-req-is-emergency" class="form-control" required>
+              <option value="true">🚨 Yes (Emergency)</option>
+              <option value="false">⚪ No (Standard)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Status <span style="color:#ef4444;">*</span></label>
+            <select name="status" id="edit-req-status" class="form-control" required>
+              <option value="OPEN">🔵 OPEN</option>
+              <option value="IN_PROGRESS">🟡 IN PROGRESS</option>
+              <option value="COMPLETED">🟢 COMPLETED</option>
+              <option value="CANCELLED">🔴 CANCELLED</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Assigned Volunteer / Leader</label>
+            <input type="text" name="assigned_volunteer" id="edit-req-assigned-vol" class="form-control" placeholder="e.g. Mohan Das (v1)">
+          </div>
+
+          <div class="form-group">
+            <label>Volunteers Needed <span style="color:#ef4444;">*</span></label>
+            <input type="number" name="volunteers_needed" id="edit-req-vol-needed" class="form-control" min="1" max="100" required>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+          <div class="form-group">
+            <label>Requester Name</label>
+            <input type="text" name="requester_name" id="edit-req-requester-name" class="form-control" placeholder="Requester Name">
+          </div>
+
+          <div class="form-group">
+            <label>Contact Phone Number</label>
+            <input type="text" name="contact_number" id="edit-req-contact-number" class="form-control" placeholder="+91 9876543210">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Description <span style="color:#ef4444;">*</span></label>
+          <textarea name="description" id="edit-req-description" class="form-control" rows="3" required></textarea>
+        </div>
+
+        <div style="display:flex; gap:1rem; margin-top:1.5rem;">
+          <button type="button" class="btn btn-outline" style="flex:1;" onclick="App.closeModal('admin-edit-modal')">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" style="flex:1.5; font-size:1rem;">
+            💾 Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. CUSTOM ALERT / CONFIRM / CERTIFICATE MODAL CONTAINER -->
   <div class="modal-overlay" id="custom-alert-modal">
     <div class="modal-card" id="custom-alert-modal-body">
       <!-- Injected via JavaScript -->
