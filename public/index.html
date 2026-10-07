@@ -477,32 +477,82 @@
   </section>
 
   <!-- =========================================================
-       5. SECTION: LOCATION & INTERACTIVE MAP
+       5. SECTION: LOCATION & PUBLIC HEALTH DIRECTORY
        ========================================================= -->
   <section class="app-section" id="section-map" style="display:none;">
     <div class="main-wrapper">
       <div class="section-header">
         <div>
-          <h2 class="section-title">Location & Map Guidance</h2>
-          <p class="section-subtitle">Real-time approximate route between volunteer and help request location</p>
+          <h2 class="section-title">Public Health & Blood Centre Directory</h2>
+          <p class="section-subtitle">Real verified Government Hospitals, Blood Centres & Official Donation Camps</p>
         </div>
-        <button class="btn btn-primary" onclick="MapManager.simulateNavigation()">
-          🗺️ NAVIGATE TO LOCATION
-        </button>
+        <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+          <a href="tel:108" class="btn btn-outline" style="border-color:#ef4444; color:#ef4444; font-size:0.85rem;">
+            🚨 Ambulance: 108
+          </a>
+          <a href="tel:104" class="btn btn-outline" style="border-color:#2563eb; color:#2563eb; font-size:0.85rem;">
+            🩸 Blood Helpline: 104
+          </a>
+        </div>
       </div>
 
-      <div class="map-card">
-        <div class="map-header">
+      <!-- Filter & Search Toolbar -->
+      <div class="filter-toolbar" style="margin-bottom:1.5rem;">
+        <div class="filter-tabs" id="map-filter-tabs">
+          <button class="tab-btn active" onclick="MapManager.setFilter('ALL', this)">All Facilities</button>
+          <button class="tab-btn" onclick="MapManager.setFilter('HOSPITAL', this)">🏥 Government Hospitals</button>
+          <button class="tab-btn" onclick="MapManager.setFilter('BLOOD_CENTRE', this)">🩸 Blood Centres</button>
+        </div>
+
+        <div class="search-filter-box">
+          <input type="text" class="search-input" placeholder="Search by facility name, address, area..." oninput="MapManager.setSearch(this.value)">
+        </div>
+      </div>
+
+      <!-- Map & Facilities Directory Grid -->
+      <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:1.5rem; align-items:start; margin-bottom:2.5rem;">
+        <!-- Leaflet Map Card -->
+        <div class="map-card" style="margin-bottom:0; position:sticky; top:90px;">
+          <div class="map-header">
+            <div>
+              <strong>📍 Interactive Facility Map:</strong> Real Geo-Coordinates
+            </div>
+            <div style="color:#059669; font-weight:700; font-size:0.85rem;">
+              🟢 Live OpenStreetMap
+            </div>
+          </div>
+          <div id="leaflet-map" style="height:480px; width:100%; border-radius:0 0 16px 16px;"></div>
+        </div>
+
+        <!-- Directory Cards List -->
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:800; color:#0f172a; margin-bottom:0.75rem;">
+            Verified Health Facilities
+          </h3>
+          <div id="facilities-list-container" style="max-height:540px; overflow-y:auto; padding-right:0.35rem;">
+            <!-- Injected via MapManager.renderDirectoryCards() -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Verified Blood Donation Camps Section -->
+      <div style="margin-top:2rem;">
+        <div class="section-header" style="margin-bottom:1rem;">
           <div>
-            <strong>📍 Active Mission Route:</strong> Campus Health Center Gate
-          </div>
-          <div style="color:var(--primary); font-weight:700;">
-            Estimated Distance: 1.2 km (4 mins)
+            <h3 style="font-size:1.25rem; font-weight:800; color:#0f172a; margin-bottom:0.25rem;">
+              ⛺ Verified Blood Donation Camps
+            </h3>
+            <p style="color:#64748b; font-size:0.85rem;">
+              Official camps verified with State Blood Transfusion Councils and licensed blood centres.
+            </p>
           </div>
         </div>
 
-        <div id="leaflet-map"></div>
+        <div id="donation-camps-container">
+          <!-- Injected via MapManager.renderCampsSection() -->
+        </div>
       </div>
+
     </div>
   </section>
 
