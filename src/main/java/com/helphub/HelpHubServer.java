@@ -601,19 +601,19 @@ public class HelpHubServer {
             }
 
             Map<String, Object> stats = new HashMap<>();
-            stats.put("total_volunteers", 1250);
-            stats.put("total_help_requests", 540);
-            stats.put("total_volunteer_hours", 3200);
-            stats.put("people_helped", 4800);
-            stats.put("college_activities", 120);
+            stats.put("total_volunteers", 300);
+            stats.put("total_help_requests", 89);
+            stats.put("total_volunteer_hours", "24/7");
+            stats.put("people_helped", 200);
+            stats.put("college_activities", 12);
 
             Map<String, Integer> categoryBreakdown = new HashMap<>();
-            categoryBreakdown.put("Medical Support", 140);
-            categoryBreakdown.put("Blood Donation", 95);
-            categoryBreakdown.put("Elderly Assistance", 80);
-            categoryBreakdown.put("Education Support", 110);
-            categoryBreakdown.put("Food Distribution", 75);
-            categoryBreakdown.put("Environmental Activities", 40);
+            categoryBreakdown.put("Medical Support", 28);
+            categoryBreakdown.put("Blood Donation", 22);
+            categoryBreakdown.put("Elderly Assistance", 15);
+            categoryBreakdown.put("Education Support", 12);
+            categoryBreakdown.put("Food Distribution", 8);
+            categoryBreakdown.put("Environmental Activities", 4);
             stats.put("category_breakdown", categoryBreakdown);
 
             sendJsonResponse(exchange, 200, toJson(stats));

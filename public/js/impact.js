@@ -18,10 +18,16 @@ const ImpactManager = {
   },
 
   animateCounters(data) {
-    this.animateVal('stat-volunteers', 0, data.total_volunteers || 1250, 1500, '+');
-    this.animateVal('stat-requests', 0, data.total_help_requests || 540, 1500, '+');
-    this.animateVal('stat-hours', 0, data.total_volunteer_hours || 3200, 1500, '+ hrs');
-    this.animateVal('stat-people', 0, data.people_helped || 4800, 1500, '+');
+    this.animateVal('stat-volunteers', 0, data.total_volunteers || 300, 1200, '+');
+    this.animateVal('stat-requests', 0, data.total_help_requests || 89, 1200, '');
+    
+    // Set 24/7 volunteer hours logged directly
+    const hoursEl = document.getElementById('stat-hours');
+    if (hoursEl) {
+      hoursEl.textContent = '24/7';
+    }
+
+    this.animateVal('stat-people', 0, data.people_helped || 200, 1200, '');
   },
 
   animateVal(id, start, end, duration, suffix = '') {
@@ -48,23 +54,18 @@ const ImpactManager = {
       this.chartInstance.destroy();
     }
 
-    const labels = Object.keys(breakdownData || {
-      'Medical Support': 140,
-      'Blood Donation': 95,
-      'Elderly Assistance': 80,
-      'Education Support': 110,
-      'Food Distribution': 75,
-      'Environmental Activities': 40
-    });
+    const defaultBreakdown = {
+      'Medical Support': 28,
+      'Blood Donation': 22,
+      'Elderly Assistance': 15,
+      'Education Support': 12,
+      'Food Distribution': 8,
+      'Environmental Activities': 4
+    };
 
-    const data = Object.values(breakdownData || {
-      'Medical Support': 140,
-      'Blood Donation': 95,
-      'Elderly Assistance': 80,
-      'Education Support': 110,
-      'Food Distribution': 75,
-      'Environmental Activities': 40
-    });
+    const categories = breakdownData || defaultBreakdown;
+    const labels = Object.keys(categories);
+    const data = Object.values(categories);
 
     this.chartInstance = new Chart(canvas, {
       type: 'doughnut',
