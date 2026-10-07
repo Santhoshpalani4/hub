@@ -7,19 +7,41 @@ const VolunteerManager = {
   currentUser: null,
   activeMission: null,
 
+  // Default gender-based avatar URLs (illustrated, professional – local SVGs with DiceBear fallback)
+  AVATAR_MALE:   'img/avatar-male.svg',
+  AVATAR_FEMALE: 'img/avatar-female.svg',
+
+  getDefaultAvatar(gender) {
+    return (gender && gender.toLowerCase() === 'female') ? this.AVATAR_FEMALE : this.AVATAR_MALE;
+  },
+
+  /** Returns effective avatar: custom (localStorage or server record) > gender default */
+  getEffectiveAvatar(vol) {
+    if (!vol) return this.AVATAR_MALE;
+    const volId = vol.id;
+    const email = vol.email;
+    if (volId) {
+      const custom = localStorage.getItem('helphub_custom_photo_' + volId);
+      if (custom) return custom;
+    }
+    if (email) {
+      const custom = localStorage.getItem('helphub_custom_photo_' + email);
+      if (custom) return custom;
+    }
+    if (vol.custom_avatar && vol.custom_avatar.trim()) return vol.custom_avatar;
+    if (vol.avatar && vol.avatar.startsWith('data:')) return vol.avatar;
+    return this.getDefaultAvatar(vol.gender);
+  },
+
   async init() {
     const savedVol = sessionStorage.getItem('helphub_current_volunteer');
     const savedUser = sessionStorage.getItem('helphub_current_user');
 
     if (savedVol) {
-      try {
-        this.currentVolunteer = JSON.parse(savedVol);
-      } catch (e) {}
+      try { this.currentVolunteer = JSON.parse(savedVol); } catch (e) {}
     }
     if (savedUser) {
-      try {
-        this.currentUser = JSON.parse(savedUser);
-      } catch (e) {}
+      try { this.currentUser = JSON.parse(savedUser); } catch (e) {}
     }
 
     if (this.currentVolunteer && this.currentVolunteer.id) {
@@ -34,13 +56,9 @@ const VolunteerManager = {
     const data = await API.get(`/volunteers/${targetId}`);
     if (data) {
       this.currentVolunteer = data;
-      if (data.user) {
-        this.currentUser = data.user;
-      }
+      if (data.user) this.currentUser = data.user;
       sessionStorage.setItem('helphub_current_volunteer', JSON.stringify(this.currentVolunteer));
-      if (this.currentUser) {
-        sessionStorage.setItem('helphub_current_user', JSON.stringify(this.currentUser));
-      }
+      if (this.currentUser) sessionStorage.setItem('helphub_current_user', JSON.stringify(this.currentUser));
       this.renderProfile(this.currentVolunteer);
     }
   },
@@ -48,18 +66,9 @@ const VolunteerManager = {
   calculateCompletion(vol) {
     if (!vol) return 0;
     const fields = [
-      vol.name,
-      vol.phone,
-      vol.email,
-      vol.college_name,
-      vol.department,
-      vol.year_of_study,
-      vol.skills,
-      vol.areas_of_interest,
-      vol.availability,
-      vol.preferred_categories,
-      vol.address,
-      vol.bio
+      vol.name, vol.phone, vol.email, vol.college_name, vol.department,
+      vol.year_of_study, vol.skills, vol.areas_of_interest,
+      vol.availability, vol.preferred_categories, vol.address, vol.bio, vol.gender
     ];
     const filled = fields.filter(f => f && String(f).trim().length > 0).length;
     return Math.round((filled / fields.length) * 100);
@@ -68,46 +77,62 @@ const VolunteerManager = {
   renderProfile(vol) {
     if (!vol) return;
 
-    // Header Info
+    const gender = vol.gender || 'Male';
+    const isFemale = gender.toLowerCase() === 'female';
+    const effectiveAvatar = this.getEffectiveAvatar(vol);
+
+    // ── Profile Header image & gender badge ──────────────────────────
     const elImg = document.getElementById('profile-img');
+    if (elImg) elImg.src = effectiveAvatar;
+
+    const genderBadge = document.getElementById('profile-gender-badge');
+    if (genderBadge) {
+      genderBadge.innerHTML = isFemale ? '&#9792;' : '&#9794;';
+      genderBadge.style.background = isFemale ? '#db2777' : '#2563eb';
+    }
+
+    // ── Navbar top-right avatar ──────────────────────────────────────
+    const navAvatar = document.getElementById('nav-user-avatar');
+    if (navAvatar) navAvatar.src = effectiveAvatar;
+
+    // ── Header text ─────────────────────────────────────────────────
     const elName = document.getElementById('profile-name-text');
     const elDeptHeader = document.getElementById('profile-dept-header');
     const elYearHeader = document.getElementById('profile-year-header');
     const elRoleTag = document.getElementById('profile-role-tag');
     const elRating = document.getElementById('profile-rating-val');
 
-    if (elImg && vol.avatar) elImg.src = vol.avatar;
     if (elName) elName.textContent = vol.name || 'Student Volunteer';
     if (elDeptHeader) elDeptHeader.textContent = vol.department || 'Department of Engineering';
     if (elYearHeader) elYearHeader.textContent = vol.year_of_study || 'Student';
     if (elRoleTag) elRoleTag.textContent = `🎓 ${(vol.role || 'VOLUNTEER').toUpperCase()}`;
     if (elRating) elRating.textContent = `${vol.safety_rating || 5.0} / 5.0`;
 
-    // Completion Status
+    // ── Completion bar ───────────────────────────────────────────────
     const completionPct = this.calculateCompletion(vol);
     const elPct = document.getElementById('profile-completion-pct');
     const elBar = document.getElementById('profile-completion-bar');
     if (elPct) elPct.textContent = `${completionPct}%`;
     if (elBar) elBar.style.width = `${completionPct}%`;
 
-    // Account & Academic Details
-    const elNameVal = document.getElementById('profile-name-val');
-    const elRoleVal = document.getElementById('profile-role-val');
-    const elPhoneVal = document.getElementById('profile-phone-val');
-    const elEmailVal = document.getElementById('profile-email-val');
-    const elCollegeVal = document.getElementById('profile-college-val');
-    const elDeptVal = document.getElementById('profile-dept-val');
-    const elYearVal = document.getElementById('profile-year-val');
+    // ── Account & Academic Details ───────────────────────────────────
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || 'N/A'; };
+    set('profile-name-val', vol.name);
+    set('profile-role-val', vol.role || 'Volunteer');
+    set('profile-phone-val', vol.phone || 'Not provided');
+    set('profile-email-val', vol.email || 'Not provided');
+    set('profile-college-val', vol.college_name || 'City Tech University');
+    set('profile-dept-val', vol.department || 'Not specified');
+    set('profile-year-val', vol.year_of_study || 'Not specified');
 
-    if (elNameVal) elNameVal.textContent = vol.name || 'N/A';
-    if (elRoleVal) elRoleVal.textContent = vol.role || 'Volunteer';
-    if (elPhoneVal) elPhoneVal.textContent = vol.phone || 'Not provided';
-    if (elEmailVal) elEmailVal.textContent = vol.email || 'Not provided';
-    if (elCollegeVal) elCollegeVal.textContent = vol.college_name || 'City Tech University';
-    if (elDeptVal) elDeptVal.textContent = vol.department || 'Not specified';
-    if (elYearVal) elYearVal.textContent = vol.year_of_study || 'Not specified';
+    // Gender field in profile
+    const genderVal = document.getElementById('profile-gender-val');
+    if (genderVal) {
+      genderVal.textContent = isFemale ? '♀ Female' : '♂ Male';
+      genderVal.style.color = isFemale ? '#db2777' : '#2563eb';
+    }
 
-    // Skills, Availability & Preferences
+    // ── Skills & Availability ────────────────────────────────────────
     const elSkillsVal = document.getElementById('profile-skills-val');
     const elInterestsVal = document.getElementById('profile-interests-val');
     const elAvailVal = document.getElementById('profile-avail-val');
@@ -124,7 +149,7 @@ const VolunteerManager = {
     if (elEmergVal) elEmergVal.textContent = vol.emergency_contact || '+91 9876543299';
     if (elBioVal) elBioVal.textContent = vol.bio || 'Dedicated student volunteer committed to social development and community impact.';
 
-    // Statistics
+    // ── Statistics ───────────────────────────────────────────────────
     const elRequests = document.getElementById('profile-requests-val');
     const elPoints = document.getElementById('profile-points-val');
     const elHours = document.getElementById('profile-hours-val');
@@ -137,26 +162,41 @@ const VolunteerManager = {
     if (elActs) elActs.textContent = vol.activities_completed || 0;
     if (elDrives) elDrives.textContent = vol.drives_joined || 0;
 
-    // Topbar update
-    const navUser = document.querySelector('.user-info-text .user-name');
-    const navRole = document.querySelector('.user-info-text .user-role');
-    if (navUser) navUser.textContent = vol.name;
+    // ── Topbar name / role / gender ──────────────────────────────────
+    const navUser = document.getElementById('nav-user-name') || document.querySelector('.user-info-text .user-name');
+    const navRole = document.getElementById('nav-user-role') || document.querySelector('.user-info-text .user-role');
+    const navGender = document.getElementById('nav-user-gender');
+    const navGenderBadge = document.getElementById('nav-user-gender-badge');
+    const profileGenderPill = document.getElementById('profile-gender-pill');
+
+    if (navUser) navUser.textContent = vol.name || 'Student Volunteer';
     if (navRole) navRole.textContent = vol.role === 'Student' ? 'Student' : 'Student Volunteer';
+    if (navGender) {
+      navGender.textContent = isFemale ? '♀ Female' : '♂ Male';
+      navGender.style.color = isFemale ? '#db2777' : '#2563eb';
+    }
+    if (navGenderBadge) {
+      navGenderBadge.innerHTML = isFemale ? '&#9792;' : '&#9794;';
+      navGenderBadge.style.background = isFemale ? '#db2777' : '#2563eb';
+    }
+    if (profileGenderPill) {
+      profileGenderPill.textContent = isFemale ? '♀ FEMALE' : '♂ MALE';
+      profileGenderPill.style.color = isFemale ? '#db2777' : '#2563eb';
+      profileGenderPill.style.background = isFemale ? '#fdf2f8' : '#eff6ff';
+    }
   },
 
   openEditProfileModal() {
     const vol = this.currentVolunteer;
-    if (!vol) {
-      alert('Please log in first.');
-      return;
-    }
+    if (!vol) { alert('Please log in first.'); return; }
 
     const errContainer = document.getElementById('profile-edit-validation-error');
     if (errContainer) errContainer.style.display = 'none';
 
     const setVal = (id, val) => {
       const el = document.getElementById(id);
-      if (el) el.value = (val !== undefined && val !== null) ? val : '';
+      if (!el) return;
+      el.value = (val !== undefined && val !== null) ? val : '';
     };
 
     setVal('edit-prof-id', vol.id);
@@ -164,7 +204,6 @@ const VolunteerManager = {
     setVal('edit-prof-role', vol.role || 'Volunteer');
     setVal('edit-prof-phone', vol.phone || '');
     setVal('edit-prof-email', vol.email || '');
-    setVal('edit-prof-avatar', vol.avatar || '');
     setVal('edit-prof-college', vol.college_name || 'City Tech University');
     setVal('edit-prof-dept', vol.department || '');
     setVal('edit-prof-year', vol.year_of_study || '1st Year');
@@ -176,7 +215,117 @@ const VolunteerManager = {
     setVal('edit-prof-emerg', vol.emergency_contact || '');
     setVal('edit-prof-bio', vol.bio || '');
 
+    // Set gender
+    const genderSel = document.getElementById('edit-prof-gender');
+    if (genderSel) genderSel.value = vol.gender || 'Male';
+
+    // Set avatar preview
+    const effectiveAvatar = this.getEffectiveAvatar(vol);
+    setVal('edit-prof-avatar', effectiveAvatar);
+    const preview = document.getElementById('edit-prof-avatar-preview');
+    if (preview) preview.src = effectiveAvatar;
+
     App.openModal('profile-edit-modal');
+  },
+
+  openChangePhotoDialog() {
+    this.openEditProfileModal();
+    setTimeout(() => {
+      const fileInput = document.getElementById('edit-prof-photo-file');
+      if (fileInput) fileInput.click();
+    }, 150);
+  },
+
+  /** Called when user changes gender in edit modal — updates preview to gender default (unless custom photo) */
+  onGenderChange(gender) {
+    const vol = this.currentVolunteer;
+    const volId = vol ? vol.id : null;
+    const email = vol ? vol.email : null;
+    const hasCustom = (volId && localStorage.getItem('helphub_custom_photo_' + volId)) ||
+                      (email && localStorage.getItem('helphub_custom_photo_' + email)) ||
+                      (vol && vol.custom_avatar);
+    if (!hasCustom) {
+      const newAvatar = this.getDefaultAvatar(gender);
+      const preview = document.getElementById('edit-prof-avatar-preview');
+      if (preview) preview.src = newAvatar;
+      const avatarInput = document.getElementById('edit-prof-avatar');
+      if (avatarInput) avatarInput.value = newAvatar;
+    }
+  },
+
+  /** Called when user selects a file for custom photo upload */
+  onPhotoUpload(input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Photo must be smaller than 5 MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Optimize and resize to 180x180 canvas
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, img.height);
+        canvas.width = 180;
+        canvas.height = 180;
+        const ctx = canvas.getContext('2d');
+        const sx = (img.width - size) / 2;
+        const sy = (img.height - size) / 2;
+        ctx.drawImage(img, sx, sy, size, size, 0, 0, 180, 180);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+
+        // Store in localStorage
+        const vol = this.currentVolunteer;
+        const volId = vol ? vol.id : null;
+        const email = vol ? vol.email : null;
+        if (volId) localStorage.setItem('helphub_custom_photo_' + volId, dataUrl);
+        if (email) localStorage.setItem('helphub_custom_photo_' + email, dataUrl);
+
+        if (vol) {
+          vol.custom_avatar = dataUrl;
+          vol.avatar = dataUrl;
+        }
+
+        // Update preview & hidden input
+        const preview = document.getElementById('edit-prof-avatar-preview');
+        if (preview) preview.src = dataUrl;
+        const avatarInput = document.getElementById('edit-prof-avatar');
+        if (avatarInput) avatarInput.value = dataUrl;
+
+        this._customPhotoRemoved = false;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  },
+
+  /** Remove custom photo — revert to gender default avatar */
+  removeCustomPhoto() {
+    const vol = this.currentVolunteer;
+    const volId = vol ? vol.id : null;
+    const email = vol ? vol.email : null;
+    if (volId) localStorage.removeItem('helphub_custom_photo_' + volId);
+    if (email) localStorage.removeItem('helphub_custom_photo_' + email);
+
+    if (vol) {
+      delete vol.custom_avatar;
+    }
+
+    const gender = (document.getElementById('edit-prof-gender') || {}).value || (vol && vol.gender) || 'Male';
+    const defaultAvatar = this.getDefaultAvatar(gender);
+
+    const preview = document.getElementById('edit-prof-avatar-preview');
+    if (preview) preview.src = defaultAvatar;
+    const avatarInput = document.getElementById('edit-prof-avatar');
+    if (avatarInput) avatarInput.value = defaultAvatar;
+
+    // Clear file input
+    const fileInput = document.getElementById('edit-prof-photo-file');
+    if (fileInput) fileInput.value = '';
+
+    this._customPhotoRemoved = true;
   },
 
   async saveProfileChanges(form) {
@@ -195,27 +344,49 @@ const VolunteerManager = {
       }
       return;
     }
+    if (!data.gender) {
+      if (errContainer) {
+        errContainer.textContent = '⚠️ Please select your Gender (Male / Female).';
+        errContainer.style.display = 'block';
+      }
+      return;
+    }
 
     const volId = this.currentVolunteer ? this.currentVolunteer.id : data.id;
+    const email = this.currentVolunteer ? this.currentVolunteer.email : data.email;
+
+    if (this._customPhotoRemoved) {
+      data.remove_custom_photo = 'true';
+      data.avatar = this.getDefaultAvatar(data.gender);
+      this._customPhotoRemoved = false;
+    } else {
+      const customPhoto = (volId && localStorage.getItem('helphub_custom_photo_' + volId)) ||
+                          (email && localStorage.getItem('helphub_custom_photo_' + email));
+      if (customPhoto) {
+        data.custom_avatar = customPhoto;
+        data.avatar = customPhoto;
+      } else {
+        data.avatar = this.getDefaultAvatar(data.gender);
+      }
+    }
+
     const res = await API.post(`/volunteers/${volId}`, data);
 
     if (res && res.success) {
       App.closeModal('profile-edit-modal');
 
-      // Update state
+      // Update local state
       Object.assign(this.currentVolunteer, data);
       if (res.user) this.currentUser = res.user;
 
       sessionStorage.setItem('helphub_current_volunteer', JSON.stringify(this.currentVolunteer));
-      if (this.currentUser) {
-        sessionStorage.setItem('helphub_current_user', JSON.stringify(this.currentUser));
-      }
+      if (this.currentUser) sessionStorage.setItem('helphub_current_user', JSON.stringify(this.currentUser));
 
       this.renderProfile(this.currentVolunteer);
 
       App.showSuccessAlert(
         'Profile updated successfully.',
-        'Your profile changes have been saved to the database and your dashboard is updated.'
+        'Your profile changes have been saved. Dashboard is now updated.'
       );
     } else {
       if (errContainer) {
@@ -241,7 +412,6 @@ const VolunteerManager = {
         '🤝 You Have Joined This Help Request!',
         `You are now part of Team <strong>${res.team ? res.team.team_code : 'HH1024'}</strong>. ${res.volunteers_joined} / ${res.volunteers_needed} volunteers joined.`
       );
-
       this.loadActiveMission(reqId);
       if (window.RequestManager) RequestManager.fetchRequests();
       this.fetchVolunteerProfile(this.currentVolunteer.id);
@@ -253,9 +423,7 @@ const VolunteerManager = {
     if (data) {
       this.activeMission = data;
       this.renderActiveMissionBanner(data);
-      if (window.MapManager) {
-        MapManager.focusOnRequest(data);
-      }
+      if (window.MapManager) MapManager.focusOnRequest(data);
     }
   },
 
@@ -357,9 +525,7 @@ const VolunteerManager = {
           );
 
           document.getElementById('active-mission-container').style.display = 'none';
-          if (this.currentVolunteer) {
-            this.fetchVolunteerProfile(this.currentVolunteer.id);
-          }
+          if (this.currentVolunteer) this.fetchVolunteerProfile(this.currentVolunteer.id);
         }
       }
     );

@@ -24,6 +24,14 @@ const App = {
     const savedVol = sessionStorage.getItem('helphub_current_volunteer');
     if (savedVol) {
       this.isLoggedIn = true;
+      try {
+        const parsedVol = JSON.parse(savedVol);
+        if (window.VolunteerManager) {
+          VolunteerManager.currentVolunteer = parsedVol;
+          VolunteerManager.renderProfile(parsedVol);
+          if (parsedVol.id) VolunteerManager.fetchVolunteerProfile(parsedVol.id);
+        }
+      } catch (e) {}
       const navLinks = document.querySelector('.nav-links');
       const navRight = document.querySelector('.nav-right');
       if (navLinks) navLinks.style.display = 'flex';
@@ -54,32 +62,59 @@ const App = {
     });
   },
 
+  // Track current mode: 'login' or 'register'
+  _portalMode: 'login',
+
+  showPortalError(msg) {
+    const box = document.getElementById('portal-auth-error');
+    const txt = document.getElementById('portal-auth-error-msg');
+    if (box && txt) {
+      txt.textContent = msg;
+      box.style.display = 'block';
+    }
+  },
+
+  hidePortalError() {
+    const box = document.getElementById('portal-auth-error');
+    if (box) box.style.display = 'none';
+  },
+
   togglePortalMode() {
-    this.isSignUpMode = !this.isSignUpMode;
+    this._portalMode = (this._portalMode === 'login') ? 'register' : 'login';
+    const isRegister = this._portalMode === 'register';
+
     const title = document.getElementById('portal-title');
-    const btn = document.getElementById('portal-toggle-btn');
+    const toggleBtn = document.getElementById('portal-toggle-btn');
+    const toggleHint = document.getElementById('portal-toggle-hint');
     const submitBtn = document.getElementById('portal-submit-btn');
     const nameGroup = document.getElementById('portal-name-group');
+    const roleGroup = document.getElementById('portal-role-group');
     const phoneGroup = document.getElementById('portal-phone-group');
-    const deptGroup = document.getElementById('portal-dept-group');
-    const referralGroup = document.getElementById('portal-referral-group');
+    const genderGroup = document.getElementById('portal-gender-group');
 
-    if (this.isSignUpMode) {
+    // Clear form & error
+    const form = document.getElementById('student-volunteer-login-form');
+    if (form) form.reset();
+    this.hidePortalError();
+
+    if (isRegister) {
       if (title) title.textContent = '📝 Volunteer & User Registration Portal';
-      if (btn) btn.textContent = 'Already have an account? Log In';
       if (submitBtn) submitBtn.textContent = '✨ COMPLETE REGISTRATION & ENTER';
+      if (toggleHint) toggleHint.textContent = 'Already have an account?';
+      if (toggleBtn) toggleBtn.textContent = 'Log In';
       if (nameGroup) nameGroup.style.display = 'block';
+      if (roleGroup) roleGroup.style.display = 'block';
       if (phoneGroup) phoneGroup.style.display = 'block';
-      if (deptGroup) deptGroup.style.display = 'block';
-      if (referralGroup) referralGroup.style.display = 'block';
+      if (genderGroup) genderGroup.style.display = 'block';
     } else {
-      if (title) title.textContent = '🔐 Volunteer & User Login Portal';
-      if (btn) btn.textContent = 'Need an account? Sign Up';
-      if (submitBtn) submitBtn.textContent = '🚀 LOG IN & ENTER PLATFORM';
+      if (title) title.textContent = '🔐 Student / Volunteer Portal Login';
+      if (submitBtn) submitBtn.innerHTML = '🚀 LOG IN &amp; ENTER PLATFORM';
+      if (toggleHint) toggleHint.textContent = "Don't have an account?";
+      if (toggleBtn) toggleBtn.textContent = 'Create an account / Register';
       if (nameGroup) nameGroup.style.display = 'none';
+      if (roleGroup) roleGroup.style.display = 'none';
       if (phoneGroup) phoneGroup.style.display = 'none';
-      if (deptGroup) deptGroup.style.display = 'none';
-      if (referralGroup) referralGroup.style.display = 'none';
+      if (genderGroup) genderGroup.style.display = 'none';
     }
   },
 
@@ -102,72 +137,126 @@ const App = {
     const elEmail = document.getElementById('portal-email');
     const elPassword = document.getElementById('portal-password');
 
-    const name = elName ? elName.value.trim() : '';
-    const role = elRole ? elRole.value.trim() : 'Volunteer';
-    const phone = elPhone ? elPhone.value.trim() : '';
     const email = elEmail ? elEmail.value.trim() : '';
     const password = elPassword ? elPassword.value.trim() : '';
 
-    if (!name || !phone || !email || !password) {
-      alert('Please fill out all required login fields.');
+    this.hidePortalError();
+
+    // ── LOGIN MODE ──────────────────────────────────────────────
+    if (this._portalMode === 'login') {
+      // Validate required fields
+      if (!email) {
+        this.showPortalError('Please enter your email address.');
+        if (elEmail) elEmail.focus();
+        return;
+      }
+      if (!password) {
+        this.showPortalError('Please enter your password.');
+        if (elPassword) elPassword.focus();
+        return;
+      }
+
+      const res = await API.post('/auth/login', { email, password });
+
+      if (res && res.success && res.volunteer) {
+        this._onLoginSuccess(res);
+      } else {
+        // Show exact server error message inline
+        const errMsg = (res && res.error)
+          ? res.error
+          : 'Login failed. Please check your credentials and try again.';
+        this.showPortalError(errMsg);
+      }
       return;
     }
 
-    const res = await API.post('/auth/login', {
-      name,
-      role,
-      phone,
-      email,
-      password
-    });
+    // ── REGISTER MODE ───────────────────────────────────────────
+    const name = elName ? elName.value.trim() : '';
+    const role = elRole ? elRole.value.trim() : 'Volunteer';
+    const phone = elPhone ? elPhone.value.trim() : '';
+    const elGender = document.getElementById('portal-gender');
+    const gender = elGender ? elGender.value.trim() : '';
+
+    if (!name) {
+      this.showPortalError('Please enter your full name.');
+      if (elName) elName.focus();
+      return;
+    }
+    if (!phone) {
+      this.showPortalError('Please enter your phone number.');
+      if (elPhone) elPhone.focus();
+      return;
+    }
+    if (!gender) {
+      this.showPortalError('Please select your Gender (Male / Female).');
+      if (elGender) elGender.focus();
+      return;
+    }
+    if (!email) {
+      this.showPortalError('Please enter your email address.');
+      if (elEmail) elEmail.focus();
+      return;
+    }
+    if (!password) {
+      this.showPortalError('Please enter a password.');
+      if (elPassword) elPassword.focus();
+      return;
+    }
+
+    const res = await API.post('/auth/register', { name, role, phone, gender, email, password });
 
     if (res && res.success && res.volunteer) {
-      this.isLoggedIn = true;
-      sessionStorage.setItem('helphub_current_volunteer', JSON.stringify(res.volunteer));
-      if (res.user) {
-        sessionStorage.setItem('helphub_current_user', JSON.stringify(res.user));
-      }
-
-      if (window.VolunteerManager) {
-        VolunteerManager.currentVolunteer = res.volunteer;
-        VolunteerManager.currentUser = res.user;
-        VolunteerManager.renderProfile(res.volunteer);
-      }
-
-      // Show main navbar links & user profile
-      const navLinks = document.querySelector('.nav-links');
-      const navRight = document.querySelector('.nav-right');
-      if (navLinks) navLinks.style.display = 'flex';
-      if (navRight) navRight.style.display = 'flex';
-
-      // Update topbar user name
-      const navUserName = document.querySelector('.user-info-text .user-name');
-      const navUserRole = document.querySelector('.user-info-text .user-role');
-      if (navUserName) navUserName.textContent = res.user ? res.user.name : name;
-      if (navUserRole) navUserRole.textContent = role === 'Student' ? 'Student' : 'Student Volunteer';
-
-      this.showSuccessAlert(
-        `Welcome, ${res.user ? res.user.name : name}!`,
-        `Logged in successfully as <strong>${role}</strong>. Welcome to the HELPHUB Community.`
-      );
-
-      if (res.member) {
-        sessionStorage.setItem('helphub_current_member', JSON.stringify(res.member));
-      }
-
-      // Redirect directly to Home page as specified
-      this.showSection('home');
-
-      // Update active nav link to Home
-      document.querySelectorAll('.nav-link').forEach(l => {
-        l.classList.remove('active');
-        if (l.getAttribute('data-section') === 'home') {
-          l.classList.add('active');
-        }
-      });
+      this._onLoginSuccess(res);
     } else {
-      alert(res && res.error ? res.error : 'Login failed. Please check your credentials.');
+      const errMsg = (res && res.error)
+        ? res.error
+        : 'Registration failed. Please try again.';
+      this.showPortalError(errMsg);
     }
+  },
+
+  _onLoginSuccess(res) {
+    this.isLoggedIn = true;
+    sessionStorage.setItem('helphub_current_volunteer', JSON.stringify(res.volunteer));
+    if (res.user) {
+      sessionStorage.setItem('helphub_current_user', JSON.stringify(res.user));
+    }
+    if (res.member) {
+      sessionStorage.setItem('helphub_current_member', JSON.stringify(res.member));
+    }
+
+    // Update volunteer manager profile
+    if (window.VolunteerManager) {
+      VolunteerManager.currentVolunteer = res.volunteer;
+      VolunteerManager.currentUser = res.user;
+      VolunteerManager.renderProfile(res.volunteer);
+    }
+
+    // Show main navbar links & user profile
+    const navLinks = document.querySelector('.nav-links');
+    const navRight = document.querySelector('.nav-right');
+    if (navLinks) navLinks.style.display = 'flex';
+    if (navRight) navRight.style.display = 'flex';
+
+    // Update topbar user name/role
+    const navUserName = document.querySelector('.user-info-text .user-name');
+    const navUserRole = document.querySelector('.user-info-text .user-role');
+    const displayName = (res.user && res.user.name) ? res.user.name : (res.volunteer.name || '');
+    const displayRole = (res.member && res.member.role) || (res.user && res.user.role) || 'Volunteer';
+    if (navUserName) navUserName.textContent = displayName;
+    if (navUserRole) navUserRole.textContent = displayRole === 'Student' ? 'Student' : 'Student Volunteer';
+
+    this.showSuccessAlert(
+      `Welcome, ${displayName}!`,
+      `Logged in successfully as <strong>${displayRole}</strong>. Welcome to the HELPHUB Community.`
+    );
+
+    // Redirect to Home page
+    this.showSection('home');
+    document.querySelectorAll('.nav-link').forEach(l => {
+      l.classList.remove('active');
+      if (l.getAttribute('data-section') === 'home') l.classList.add('active');
+    });
   },
 
   async logout() {
@@ -188,11 +277,28 @@ const App = {
     }
 
     this.isLoggedIn = false;
+    this._portalMode = 'login';
     sessionStorage.removeItem('helphub_current_volunteer');
     sessionStorage.removeItem('helphub_current_user');
     sessionStorage.removeItem('helphub_current_member');
     const form = document.getElementById('student-volunteer-login-form');
     if (form) form.reset();
+    this.hidePortalError();
+    // Reset portal UI to login mode
+    const title = document.getElementById('portal-title');
+    const submitBtn = document.getElementById('portal-submit-btn');
+    const toggleHint = document.getElementById('portal-toggle-hint');
+    const toggleBtn = document.getElementById('portal-toggle-btn');
+    const nameGroup = document.getElementById('portal-name-group');
+    const roleGroup = document.getElementById('portal-role-group');
+    const phoneGroup = document.getElementById('portal-phone-group');
+    if (title) title.textContent = '🔐 Student / Volunteer Portal Login';
+    if (submitBtn) submitBtn.innerHTML = '🚀 LOG IN &amp; ENTER PLATFORM';
+    if (toggleHint) toggleHint.textContent = "Don't have an account?";
+    if (toggleBtn) toggleBtn.textContent = 'Create an account / Register';
+    if (nameGroup) nameGroup.style.display = 'none';
+    if (roleGroup) roleGroup.style.display = 'none';
+    if (phoneGroup) phoneGroup.style.display = 'none';
     this.showSuccessAlert('Logged Out', 'You have been safely logged out of HELPHUB.');
     this.showSection('login-portal');
   },

@@ -120,7 +120,7 @@ public class HelpHubServer {
             "year_of_study", "3rd Year", "points", 850, "total_hours", 42.0, "activities_completed", 12, "people_helped", 18,
             "skills", "First Aid, CPR Certified, Emergency Management, Tutoring",
             "bio", "Dedicated student volunteer committed to community health drives and campus social activities.",
-            "emergency_contact", "+91 9876543299"
+            "emergency_contact", "+91 9876543299", "gender", "Male"
         );
         Map<String, Object> m2 = createMap(
             "id", "MEM-102", "member_id", "MEM-102", "name", "Raj Kumar", "email", "raj@campus.edu",
@@ -130,7 +130,7 @@ public class HelpHubServer {
             "year_of_study", "3rd Year", "points", 620, "total_hours", 31.5, "activities_completed", 9, "people_helped", 14,
             "skills", "Blood Donation Coordinator, Crowd Management",
             "bio", "Active NSS member and blood donation coordinator.",
-            "emergency_contact", "+91 9876543298"
+            "emergency_contact", "+91 9876543298", "gender", "Male"
         );
         Map<String, Object> m3 = createMap(
             "id", "MEM-103", "member_id", "MEM-103", "name", "Santhosh V", "email", "santhosh@campus.edu",
@@ -140,7 +140,7 @@ public class HelpHubServer {
             "year_of_study", "2nd Year", "points", 410, "total_hours", 22.0, "activities_completed", 6, "people_helped", 9,
             "skills", "Logistics & Food Distribution",
             "bio", "Passionate about hunger relief and environmental drives.",
-            "emergency_contact", "+91 9876543297"
+            "emergency_contact", "+91 9876543297", "gender", "Male"
         );
         Map<String, Object> m4 = createMap(
             "id", "MEM-104", "member_id", "MEM-104", "name", "Arun Prakash", "email", "arun@campus.edu",
@@ -150,30 +150,43 @@ public class HelpHubServer {
             "year_of_study", "1st Year", "points", 290, "total_hours", 15.0, "activities_completed", 4, "people_helped", 6,
             "skills", "Disaster Relief, Driving",
             "bio", "Enthusiastic student volunteer ready for physical and community support.",
-            "emergency_contact", "+91 9876543296"
+            "emergency_contact", "+91 9876543296", "gender", "Male"
+        );
+
+        Map<String, Object> m5 = createMap(
+            "id", "MEM-105", "member_id", "MEM-105", "name", "Priya Sharma", "email", "priya@campus.edu",
+            "phone", "+91 9876543214", "role", "Volunteer", "registration_date", "06 Oct 2026, 12:00 PM",
+            "last_login", "07 Oct 2026, 09:40 PM", "status", "Offline", "password_hash", hashPassword("priya123"),
+            "college_name", "City Tech University", "department", "Biotechnology & Healthcare",
+            "year_of_study", "3rd Year", "points", 540, "total_hours", 28.0, "activities_completed", 8, "people_helped", 15,
+            "skills", "Medical Aid, First Aid, Patient Care, Community Service",
+            "bio", "Passionate student volunteer leading campus blood donation drives and healthcare outreach.",
+            "emergency_contact", "+91 9876543295", "gender", "Female"
         );
 
         members.put("MEM-101", m1);
         members.put("MEM-102", m2);
         members.put("MEM-103", m3);
         members.put("MEM-104", m4);
+        members.put("MEM-105", m5);
 
         // Seed Users
-        Map<String, Object> u1 = createMap("id", "u1", "name", "Mohan Das", "email", "mohan@campus.edu", "phone", "+91 9876543210", "role", "VOLUNTEER", "college_name", "City Tech University", "avatar", "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150");
-        Map<String, Object> u2 = createMap("id", "u2", "name", "Raj Kumar", "email", "raj@campus.edu", "phone", "+91 9876543211", "role", "VOLUNTEER", "college_name", "City Tech University", "avatar", "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150");
-        Map<String, Object> u3 = createMap("id", "u3", "name", "Santhosh V", "email", "santhosh@campus.edu", "phone", "+91 9876543212", "role", "VOLUNTEER", "college_name", "City Tech University", "avatar", "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150");
-        Map<String, Object> u4 = createMap("id", "u4", "name", "Arun Prakash", "email", "arun@campus.edu", "phone", "+91 9876543213", "role", "VOLUNTEER", "college_name", "City Tech University", "avatar", "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=150");
-        Map<String, Object> u5 = createMap("id", "u5", "name", "Priya Sharma", "email", "priya@ngo.org", "phone", "+91 9876543214", "role", "REQUESTER", "college_name", "Sunshine Foundation NGO", "avatar", "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150");
+        Map<String, Object> u1 = createMap("id", "u1", "name", "Mohan Das", "email", "mohan@campus.edu", "phone", "+91 9876543210", "role", "VOLUNTEER", "gender", "Male", "college_name", "City Tech University", "avatar", "img/avatar-male.svg");
+        Map<String, Object> u2 = createMap("id", "u2", "name", "Raj Kumar", "email", "raj@campus.edu", "phone", "+91 9876543211", "role", "VOLUNTEER", "gender", "Male", "college_name", "City Tech University", "avatar", "img/avatar-male.svg");
+        Map<String, Object> u3 = createMap("id", "u3", "name", "Santhosh V", "email", "santhosh@campus.edu", "phone", "+91 9876543212", "role", "VOLUNTEER", "gender", "Male", "college_name", "City Tech University", "avatar", "img/avatar-male.svg");
+        Map<String, Object> u4 = createMap("id", "u4", "name", "Arun Prakash", "email", "arun@campus.edu", "phone", "+91 9876543213", "role", "VOLUNTEER", "gender", "Male", "college_name", "City Tech University", "avatar", "img/avatar-male.svg");
+        Map<String, Object> u5 = createMap("id", "u5", "name", "Priya Sharma", "email", "priya@campus.edu", "phone", "+91 9876543214", "role", "VOLUNTEER", "gender", "Female", "college_name", "City Tech University", "avatar", "img/avatar-female.svg");
 
         users.put("u1", u1); users.put("u2", u2); users.put("u3", u3); users.put("u4", u4); users.put("u5", u5);
 
         // Seed Volunteers
-        Map<String, Object> v1 = createMap("id", "v1", "user_id", "u1", "name", "Mohan Das", "student_id", "STU2023CSE042", "department", "Computer Science & Engineering", "points", 850, "total_hours", 42.0, "activities_completed", 12, "people_helped", 18, "safety_rating", 5.0, "is_available", true, "skills", "First Aid, CPR Certified, Emergency Management, Tutoring", "availability", "Weekends, Evenings & On-Call Emergencies", "address", "Room 402, Campus Block B Hostel", "bio", "Dedicated student volunteer committed to community health drives, senior citizen support, and campus social activities.", "emergency_contact", "+91 9876543299", "drives_joined", 4);
-        Map<String, Object> v2 = createMap("id", "v2", "user_id", "u2", "name", "Raj Kumar", "student_id", "STU2023ECE018", "department", "Electronics & Comm", "points", 620, "total_hours", 31.5, "activities_completed", 9, "people_helped", 14, "safety_rating", 4.9, "is_available", true, "skills", "Blood Donation Coordinator, Crowd Management", "availability", "Saturday & Sunday", "address", "Campus Block A Hostel", "bio", "Active NSS member and blood donation coordinator.", "emergency_contact", "+91 9876543298", "drives_joined", 3);
-        Map<String, Object> v3 = createMap("id", "v3", "user_id", "u3", "name", "Santhosh V", "student_id", "STU2023EEE055", "department", "Electrical Eng", "points", 410, "total_hours", 22.0, "activities_completed", 6, "people_helped", 9, "safety_rating", 5.0, "is_available", true, "skills", "Logistics & Food Distribution", "availability", "Flexible Hours", "address", "City Tech Hostel C", "bio", "Passionate about hunger relief and environmental drives.", "emergency_contact", "+91 9876543297", "drives_joined", 2);
-        Map<String, Object> v4 = createMap("id", "v4", "user_id", "u4", "name", "Arun Prakash", "student_id", "STU2023MECH012", "department", "Mechanical Eng", "points", 290, "total_hours", 15.0, "activities_completed", 4, "people_helped", 6, "safety_rating", 4.8, "is_available", true, "skills", "Disaster Relief, Driving", "availability", "Evenings", "address", "Campus Hostels", "bio", "Enthusiastic student volunteer ready for physical and community support.", "emergency_contact", "+91 9876543296", "drives_joined", 1);
+        Map<String, Object> v1 = createMap("id", "v1", "user_id", "u1", "name", "Mohan Das", "email", "mohan@campus.edu", "phone", "+91 9876543210", "role", "Volunteer", "gender", "Male", "student_id", "STU2023CSE042", "department", "Computer Science & Engineering", "college_name", "City Tech University", "year_of_study", "3rd Year", "points", 850, "total_hours", 42.0, "activities_completed", 12, "people_helped", 18, "safety_rating", 5.0, "is_available", true, "skills", "First Aid, CPR Certified, Emergency Management, Tutoring", "availability", "Weekends, Evenings & On-Call Emergencies", "address", "Room 402, Campus Block B Hostel", "bio", "Dedicated student volunteer committed to community health drives, senior citizen support, and campus social activities.", "emergency_contact", "+91 9876543299", "drives_joined", 4, "avatar", "img/avatar-male.svg");
+        Map<String, Object> v2 = createMap("id", "v2", "user_id", "u2", "name", "Raj Kumar", "email", "raj@campus.edu", "phone", "+91 9876543211", "role", "Volunteer", "gender", "Male", "student_id", "STU2023ECE018", "department", "Electronics & Comm", "college_name", "City Tech University", "year_of_study", "3rd Year", "points", 620, "total_hours", 31.5, "activities_completed", 9, "people_helped", 14, "safety_rating", 4.9, "is_available", true, "skills", "Blood Donation Coordinator, Crowd Management", "availability", "Saturday & Sunday", "address", "Campus Block A Hostel", "bio", "Active NSS member and blood donation coordinator.", "emergency_contact", "+91 9876543298", "drives_joined", 3, "avatar", "img/avatar-male.svg");
+        Map<String, Object> v3 = createMap("id", "v3", "user_id", "u3", "name", "Santhosh V", "email", "santhosh@campus.edu", "phone", "+91 9876543212", "role", "Volunteer", "gender", "Male", "student_id", "STU2023EEE055", "department", "Electrical Eng", "college_name", "City Tech University", "year_of_study", "2nd Year", "points", 410, "total_hours", 22.0, "activities_completed", 6, "people_helped", 9, "safety_rating", 5.0, "is_available", true, "skills", "Logistics & Food Distribution", "availability", "Flexible Hours", "address", "City Tech Hostel C", "bio", "Passionate about hunger relief and environmental drives.", "emergency_contact", "+91 9876543297", "drives_joined", 2, "avatar", "img/avatar-male.svg");
+        Map<String, Object> v4 = createMap("id", "v4", "user_id", "u4", "name", "Arun Prakash", "email", "arun@campus.edu", "phone", "+91 9876543213", "role", "Student", "gender", "Male", "student_id", "STU2023MECH012", "department", "Mechanical Eng", "college_name", "City Tech University", "year_of_study", "1st Year", "points", 290, "total_hours", 15.0, "activities_completed", 4, "people_helped", 6, "safety_rating", 4.8, "is_available", true, "skills", "Disaster Relief, Driving", "availability", "Evenings", "address", "Campus Hostels", "bio", "Enthusiastic student volunteer ready for physical and community support.", "emergency_contact", "+91 9876543296", "drives_joined", 1, "avatar", "img/avatar-male.svg");
+        Map<String, Object> v5 = createMap("id", "v5", "user_id", "u5", "name", "Priya Sharma", "email", "priya@campus.edu", "phone", "+91 9876543214", "role", "Volunteer", "gender", "Female", "student_id", "STU2023BIO029", "department", "Biotechnology & Healthcare", "college_name", "City Tech University", "year_of_study", "3rd Year", "points", 540, "total_hours", 28.0, "activities_completed", 8, "people_helped", 15, "safety_rating", 5.0, "is_available", true, "skills", "Medical Aid, First Aid, Patient Care", "availability", "Weekdays & Health Camps", "address", "Campus Girls Hostel Block A", "bio", "Passionate student volunteer leading campus blood donation drives and healthcare outreach.", "emergency_contact", "+91 9876543295", "drives_joined", 3, "avatar", "img/avatar-female.svg");
 
-        volunteers.put("v1", v1); volunteers.put("v2", v2); volunteers.put("v3", v3); volunteers.put("v4", v4);
+        volunteers.put("v1", v1); volunteers.put("v2", v2); volunteers.put("v3", v3); volunteers.put("v4", v4); volunteers.put("v5", v5);
 
         // Seed Badges
         badges.add(createMap("id", "b1", "name", "First Helper", "code", "FIRST_HELPER", "icon", "🏅", "description", "Completed your first help activity", "points", 20));
@@ -726,13 +739,14 @@ public class HelpHubServer {
                 String body = readBody(exchange);
                 Map<String, String> data = parseSimpleJson(body);
 
+                // --- 1. LOGOUT ENDPOINT ---
                 if (path.endsWith("/logout")) {
-                    String email = getOrDefault(data, "email", "").toLowerCase();
-                    String id = getOrDefault(data, "id", getOrDefault(data, "member_id", ""));
+                    String email = getOrDefault(data, "email", "").toLowerCase().trim();
+                    String id = getOrDefault(data, "id", getOrDefault(data, "member_id", "")).trim();
 
                     for (Map<String, Object> m : members.values()) {
-                        if ((!email.isEmpty() && email.equalsIgnoreCase(String.valueOf(m.get("email")))) ||
-                            (!id.isEmpty() && id.equalsIgnoreCase(String.valueOf(m.get("id"))))) {
+                        if ((!email.isEmpty() && email.equalsIgnoreCase(String.valueOf(m.get("email")).trim())) ||
+                            (!id.isEmpty() && id.equalsIgnoreCase(String.valueOf(m.get("id")).trim()))) {
                             m.put("status", "Offline");
                             break;
                         }
@@ -741,49 +755,59 @@ public class HelpHubServer {
                     return;
                 }
 
-                // Login or Register
-                String name = getOrDefault(data, "name", "Student Volunteer");
-                String email = getOrDefault(data, "email", "user@campus.edu").toLowerCase();
-                String phone = getOrDefault(data, "phone", "");
-                String role = getOrDefault(data, "role", "Volunteer");
-                String password = getOrDefault(data, "password", "");
-                String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
+                // --- 2. REGISTRATION ENDPOINT ---
+                if (path.endsWith("/register")) {
+                    String name = getOrDefault(data, "name", "").trim();
+                    String email = getOrDefault(data, "email", "").toLowerCase().trim();
+                    String phone = getOrDefault(data, "phone", "").trim();
+                    String role = getOrDefault(data, "role", "Volunteer").trim();
+                    String password = getOrDefault(data, "password", "").trim();
 
-                if (role.equalsIgnoreCase("student")) role = "Student";
-                else if (role.equalsIgnoreCase("volunteer")) role = "Volunteer";
-
-                // Track Real Member in members store
-                Map<String, Object> member = null;
-                for (Map<String, Object> m : members.values()) {
-                    if (email.equalsIgnoreCase(String.valueOf(m.get("email")))) {
-                        member = m;
-                        break;
+                    if (name.isEmpty() || email.isEmpty() || phone.isEmpty() || password.isEmpty()) {
+                        sendJsonResponse(exchange, 400, "{\"success\":false,\"error\":\"Please fill in all required registration fields.\"}");
+                        return;
                     }
-                }
 
-                if (member != null) {
-                    member.put("name", name);
-                    if (!phone.isEmpty()) member.put("phone", phone);
-                    member.put("role", role);
-                    member.put("last_login", nowStr);
-                    member.put("status", "Active");
-                    if (!password.isEmpty()) member.put("password_hash", hashPassword(password));
-                } else {
+                    if (role.equalsIgnoreCase("student")) role = "Student";
+                    else role = "Volunteer";
+
+                    // Check if already registered
+                    for (Map<String, Object> m : members.values()) {
+                        if (email.equalsIgnoreCase(String.valueOf(m.get("email")).trim())) {
+                            sendJsonResponse(exchange, 409, "{\"success\":false,\"error\":\"An account with this email is already registered. Please log in.\"}");
+                            return;
+                        }
+                    }
+
+                    String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
                     String memId = "MEM-" + (100 + members.size() + 1);
-                    member = createMap(
+                    String gender = getOrDefault(data, "gender", "").trim();
+                    if (gender.isEmpty() || (!gender.equalsIgnoreCase("Male") && !gender.equalsIgnoreCase("Female"))) {
+                        sendJsonResponse(exchange, 400, "{\"success\":false,\"error\":\"Gender is required. Please select Male or Female.\"}");
+                        return;
+                    }
+                    if (gender.equalsIgnoreCase("female")) gender = "Female";
+                    else gender = "Male";
+                    String defaultAvatar = gender.equalsIgnoreCase("Female")
+                        ? "img/avatar-female.svg"
+                        : "img/avatar-male.svg";
+
+                    Map<String, Object> newMember = createMap(
                         "id", memId,
                         "member_id", memId,
                         "name", name,
                         "email", email,
                         "phone", phone,
                         "role", role,
+                        "gender", gender,
+                        "avatar", defaultAvatar,
                         "registration_date", nowStr,
                         "last_login", nowStr,
                         "status", "Active",
                         "password_hash", hashPassword(password),
-                        "college_name", "City Tech University",
-                        "department", "General Studies",
-                        "year_of_study", "1st Year",
+                        "college_name", getOrDefault(data, "college_name", "City Tech University"),
+                        "department", getOrDefault(data, "department", "General Studies"),
+                        "year_of_study", getOrDefault(data, "year_of_study", "1st Year"),
                         "points", 50,
                         "total_hours", 0.0,
                         "activities_completed", 0,
@@ -793,59 +817,172 @@ public class HelpHubServer {
                         "bio", "",
                         "emergency_contact", ""
                     );
-                    members.put(memId, member);
-                }
+                    members.put(memId, newMember);
 
-                // Sync users map
-                Map<String, Object> foundUser = null;
-                for (Map<String, Object> u : users.values()) {
-                    if (email.equalsIgnoreCase(String.valueOf(u.get("email")))) {
-                        foundUser = u;
-                        break;
-                    }
-                }
-                if (foundUser != null) {
-                    foundUser.put("name", name);
-                    if (!phone.isEmpty()) foundUser.put("phone", phone);
-                    foundUser.put("role", role);
-                } else {
+                    // Sync user & volunteer maps
                     String uId = "u_" + System.currentTimeMillis();
-                    foundUser = createMap(
+                    Map<String, Object> newUser = createMap(
                         "id", uId,
                         "name", name,
                         "email", email,
                         "phone", phone,
                         "role", role,
-                        "college_name", member.getOrDefault("college_name", "City Tech University"),
-                        "avatar", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                        "gender", gender,
+                        "college_name", newMember.get("college_name"),
+                        "avatar", defaultAvatar
                     );
-                    users.put(uId, foundUser);
+                    users.put(uId, newUser);
+
+                    String vId = "v_" + System.currentTimeMillis();
+                    Map<String, Object> newVol = createMap(
+                        "id", vId,
+                        "user_id", uId,
+                        "name", name,
+                        "email", email,
+                        "phone", phone,
+                        "gender", gender,
+                        "student_id", "STU" + (202600 + volunteers.size() + 1),
+                        "department", newMember.get("department"),
+                        "year_of_study", newMember.get("year_of_study"),
+                        "role", role,
+                        "college_name", newMember.get("college_name"),
+                        "points", 50,
+                        "total_hours", 0.0,
+                        "activities_completed", 0,
+                        "people_helped", 0,
+                        "safety_rating", 5.0,
+                        "is_available", true,
+                        "skills", "",
+                        "areas_of_interest", "",
+                        "availability", "",
+                        "preferred_categories", "",
+                        "address", "",
+                        "bio", "",
+                        "emergency_contact", "",
+                        "drives_joined", 0,
+                        "avatar", defaultAvatar
+                    );
+                    volunteers.put(vId, newVol);
+
+                    Map<String, Object> res = new HashMap<>();
+                    res.put("success", true);
+                    res.put("message", "Registration successful. Welcome to HELPHUB!");
+                    res.put("member", sanitizeMember(newMember));
+                    res.put("user", newUser);
+                    res.put("volunteer", newVol);
+
+                    sendJsonResponse(exchange, 201, toJson(res));
+                    return;
                 }
 
-                // Sync volunteers map
+                // --- 3. LOGIN AUTHENTICATION ENDPOINT ---
+                String email = getOrDefault(data, "email", "").toLowerCase().trim();
+                String password = getOrDefault(data, "password", "").trim();
+
+                // Validation: Check empty credentials
+                if (email.isEmpty() || password.isEmpty()) {
+                    sendJsonResponse(exchange, 400, "{\"success\":false,\"error\":\"Please enter both email address and password.\"}");
+                    return;
+                }
+
+                // Step 1: Find existing registered member by email
+                Map<String, Object> member = null;
+                for (Map<String, Object> m : members.values()) {
+                    if (email.equalsIgnoreCase(String.valueOf(m.get("email")).trim())) {
+                        member = m;
+                        break;
+                    }
+                }
+
+                // If user is not found in database -> Do NOT create account, return error
+                if (member == null) {
+                    sendJsonResponse(exchange, 404, "{\"success\":false,\"error\":\"User not found. Please register before logging in.\"}");
+                    return;
+                }
+
+                // Step 2: Validate password hash
+                String storedHash = (String) member.get("password_hash");
+                String enteredHash = hashPassword(password);
+
+                boolean passwordMatches = false;
+                if (storedHash != null && !storedHash.isEmpty()) {
+                    passwordMatches = storedHash.equals(enteredHash) || storedHash.equals(password);
+                }
+
+                // If password does not match -> return error
+                if (!passwordMatches) {
+                    sendJsonResponse(exchange, 401, "{\"success\":false,\"error\":\"Incorrect password. Please try again.\"}");
+                    return;
+                }
+
+                // Step 3: Login Success -> update last_login and status
+                String nowStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a"));
+                member.put("last_login", nowStr);
+                member.put("status", "Active");
+
+                String memberName = String.valueOf(member.get("name"));
+                String memberRole = String.valueOf(member.get("role"));
+                String memberPhone = String.valueOf(member.get("phone"));
+
+                String memberGender = (String) member.getOrDefault("gender", "Male");
+                String customAvatar = (String) member.get("custom_avatar");
+                String defaultAvatar = memberGender.equalsIgnoreCase("Female") ? "img/avatar-female.svg" : "img/avatar-male.svg";
+                String effectiveAvatar = (customAvatar != null && !customAvatar.isEmpty()) ? customAvatar : defaultAvatar;
+
+                // Sync linked user
+                Map<String, Object> foundUser = null;
+                for (Map<String, Object> u : users.values()) {
+                    if (email.equalsIgnoreCase(String.valueOf(u.get("email")).trim())) {
+                        foundUser = u;
+                        break;
+                    }
+                }
+                if (foundUser == null) {
+                    foundUser = createMap(
+                        "id", member.get("id"),
+                        "name", memberName,
+                        "email", email,
+                        "phone", memberPhone,
+                        "role", memberRole,
+                        "gender", memberGender,
+                        "college_name", member.getOrDefault("college_name", "City Tech University"),
+                        "avatar", effectiveAvatar
+                    );
+                    if (customAvatar != null && !customAvatar.isEmpty()) {
+                        foundUser.put("custom_avatar", customAvatar);
+                    }
+                    users.put(String.valueOf(member.get("id")), foundUser);
+                } else {
+                    foundUser.put("gender", memberGender);
+                    foundUser.put("avatar", effectiveAvatar);
+                    if (customAvatar != null && !customAvatar.isEmpty()) {
+                        foundUser.put("custom_avatar", customAvatar);
+                    } else {
+                        foundUser.remove("custom_avatar");
+                    }
+                }
+
+                // Sync linked volunteer
                 Map<String, Object> vol = null;
                 for (Map<String, Object> v : volunteers.values()) {
-                    if (email.equalsIgnoreCase(String.valueOf(v.get("email"))) || (foundUser != null && foundUser.get("id").equals(v.get("user_id")))) {
+                    if (email.equalsIgnoreCase(String.valueOf(v.get("email")).trim()) || foundUser.get("id").equals(v.get("user_id"))) {
                         vol = v;
                         break;
                     }
                 }
-                if (vol != null) {
-                    vol.put("name", name);
-                    if (!phone.isEmpty()) vol.put("phone", phone);
-                    vol.put("role", role);
-                } else {
+                if (vol == null) {
                     String vId = "v_" + System.currentTimeMillis();
                     vol = createMap(
                         "id", vId,
                         "user_id", foundUser.get("id"),
-                        "name", name,
+                        "name", memberName,
                         "email", email,
-                        "phone", phone,
+                        "phone", memberPhone,
+                        "gender", memberGender,
                         "student_id", "STU" + (202600 + volunteers.size() + 1),
                         "department", member.getOrDefault("department", "General Studies"),
                         "year_of_study", member.getOrDefault("year_of_study", "1st Year"),
-                        "role", role,
+                        "role", memberRole,
                         "college_name", member.getOrDefault("college_name", "City Tech University"),
                         "points", member.getOrDefault("points", 50),
                         "total_hours", member.getOrDefault("total_hours", 0.0),
@@ -861,9 +998,24 @@ public class HelpHubServer {
                         "bio", member.getOrDefault("bio", ""),
                         "emergency_contact", member.getOrDefault("emergency_contact", ""),
                         "drives_joined", 0,
-                        "avatar", "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150"
+                        "avatar", effectiveAvatar
                     );
+                    if (customAvatar != null && !customAvatar.isEmpty()) {
+                        vol.put("custom_avatar", customAvatar);
+                    }
                     volunteers.put(vId, vol);
+                } else {
+                    // Update volunteer details from member
+                    vol.put("name", memberName);
+                    vol.put("role", memberRole);
+                    vol.put("phone", memberPhone);
+                    vol.put("gender", memberGender);
+                    vol.put("avatar", effectiveAvatar);
+                    if (customAvatar != null && !customAvatar.isEmpty()) {
+                        vol.put("custom_avatar", customAvatar);
+                    } else {
+                        vol.remove("custom_avatar");
+                    }
                 }
 
                 Map<String, Object> res = new HashMap<>();
@@ -911,6 +1063,23 @@ public class HelpHubServer {
                     Map<String, Object> user = users.get(userId);
 
                     if ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method)) {
+                        // Security check: Only the account owner or admin can edit
+                        if (!isAuthorizedAdmin(exchange)) {
+                            String headerUserId = exchange.getRequestHeaders().getFirst("X-User-Id");
+                            String headerUserEmail = exchange.getRequestHeaders().getFirst("X-User-Email");
+                            boolean isOwner = false;
+                            if (headerUserId != null && (headerUserId.equalsIgnoreCase(vId) || headerUserId.equalsIgnoreCase(userId) || headerUserId.equalsIgnoreCase((String)vol.get("id")))) {
+                                isOwner = true;
+                            }
+                            if (headerUserEmail != null && headerUserEmail.equalsIgnoreCase((String)vol.get("email"))) {
+                                isOwner = true;
+                            }
+                            if (!isOwner) {
+                                sendJsonResponse(exchange, 403, "{\"success\":false,\"error\":\"Security violation: Each user can edit only their own profile.\"}");
+                                return;
+                            }
+                        }
+
                         // Update Profile
                         String body = readBody(exchange);
                         Map<String, String> data = parseSimpleJson(body);
@@ -935,9 +1104,53 @@ public class HelpHubServer {
                             vol.put("college_name", data.get("college_name").trim());
                             if (user != null) user.put("college_name", data.get("college_name").trim());
                         }
-                        if (data.containsKey("avatar") && !data.get("avatar").trim().isEmpty()) {
-                            vol.put("avatar", data.get("avatar").trim());
-                            if (user != null) user.put("avatar", data.get("avatar").trim());
+
+                        // Gender Handling
+                        if (data.containsKey("gender") && !data.get("gender").trim().isEmpty()) {
+                            String newGender = data.get("gender").trim();
+                            if (!newGender.equalsIgnoreCase("Female")) newGender = "Male";
+                            vol.put("gender", newGender);
+                            if (user != null) user.put("gender", newGender);
+                        }
+
+                        // Photo / Avatar Handling
+                        String curGender = (String) vol.getOrDefault("gender", "Male");
+                        String defAvatar = curGender.equalsIgnoreCase("Female") ? "img/avatar-female.svg" : "img/avatar-male.svg";
+                        boolean removePhoto = "true".equalsIgnoreCase(data.get("remove_custom_photo"));
+                        String customPhoto = data.get("custom_avatar");
+
+                        if (removePhoto) {
+                            vol.remove("custom_avatar");
+                            if (user != null) user.remove("custom_avatar");
+                            vol.put("avatar", defAvatar);
+                            if (user != null) user.put("avatar", defAvatar);
+                        } else if (customPhoto != null && !customPhoto.trim().isEmpty()) {
+                            vol.put("custom_avatar", customPhoto.trim());
+                            vol.put("avatar", customPhoto.trim());
+                            if (user != null) {
+                                user.put("custom_avatar", customPhoto.trim());
+                                user.put("avatar", customPhoto.trim());
+                            }
+                        } else if (data.containsKey("avatar") && !data.get("avatar").trim().isEmpty()) {
+                            String av = data.get("avatar").trim();
+                            if (av.startsWith("data:")) {
+                                vol.put("custom_avatar", av);
+                                vol.put("avatar", av);
+                                if (user != null) {
+                                    user.put("custom_avatar", av);
+                                    user.put("avatar", av);
+                                }
+                            } else {
+                                vol.put("avatar", defAvatar);
+                                if (user != null) user.put("avatar", defAvatar);
+                            }
+                        } else {
+                            // If gender was updated and there's no custom photo:
+                            String existingCustom = (String) vol.get("custom_avatar");
+                            if (existingCustom == null || existingCustom.trim().isEmpty()) {
+                                vol.put("avatar", defAvatar);
+                                if (user != null) user.put("avatar", defAvatar);
+                            }
                         }
 
                         if (data.containsKey("department")) vol.put("department", data.get("department").trim());
@@ -958,6 +1171,13 @@ public class HelpHubServer {
                                     if (data.containsKey("name")) m.put("name", vol.get("name"));
                                     if (data.containsKey("phone")) m.put("phone", vol.get("phone"));
                                     if (data.containsKey("role")) m.put("role", vol.get("role"));
+                                    m.put("gender", vol.get("gender"));
+                                    m.put("avatar", vol.get("avatar"));
+                                    if (removePhoto) {
+                                        m.remove("custom_avatar");
+                                    } else if (vol.containsKey("custom_avatar")) {
+                                        m.put("custom_avatar", vol.get("custom_avatar"));
+                                    }
                                     if (data.containsKey("college_name")) m.put("college_name", vol.get("college_name"));
                                     if (data.containsKey("department")) m.put("department", vol.get("department"));
                                     if (data.containsKey("year_of_study")) m.put("year_of_study", vol.get("year_of_study"));

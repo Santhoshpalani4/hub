@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HELPHUB — One Request. Many Helping Hands.</title>
-  <meta name="description" content="HELPHUB connects people and organizations needing assistance with student volunteers. Real-time alert, safety confirmation, team coordination, and social impact platform.">
-  
+  <meta name="description"
+    content="HELPHUB connects people and organizations needing assistance with student volunteers. Real-time alert, safety confirmation, team coordination, and social impact platform.">
+
   <!-- CSS Stylesheets -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/certificate.css">
@@ -17,6 +19,7 @@
   <!-- Chart.js for Impact Dashboard -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
 
   <!-- =========================================================
@@ -50,15 +53,20 @@
       </button>
 
       <!-- 👤 Volunteer Profile Button -->
-      <button class="user-profile-btn" onclick="App.showSection('profile')">
-        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Mohan Das" class="user-avatar">
+      <button class="user-profile-btn" onclick="App.showSection('profile')" title="View Student / Volunteer Profile">
+        <div style="position:relative; display:inline-block;">
+          <img src="img/avatar-male.svg" alt="Profile"
+            class="user-avatar" id="nav-user-avatar" style="object-fit:cover;">
+          <span id="nav-user-gender-badge" style="position:absolute; bottom:-2px; right:-2px; background:#2563eb; color:white; font-size:0.65rem; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; border:1.5px solid white;">&#9794;</span>
+        </div>
         <div class="user-info-text">
-          <div class="user-name">Mohan Das</div>
-          <div class="user-role">Student Volunteer</div>
+          <div class="user-name" id="nav-user-name">Mohan Das</div>
+          <div class="user-role" id="nav-user-role-wrap"><span id="nav-user-role">Student Volunteer</span> • <span id="nav-user-gender" style="font-weight:700; color:#2563eb;">♂ Male</span></div>
         </div>
       </button>
 
-      <button class="mobile-menu-btn" onclick="document.querySelector('.nav-links').classList.toggle('active')">☰</button>
+      <button class="mobile-menu-btn"
+        onclick="document.querySelector('.nav-links').classList.toggle('active')">☰</button>
     </div>
   </nav>
 
@@ -66,7 +74,8 @@
   <div class="notif-drawer" id="notif-drawer">
     <div class="notif-header">
       <h4 style="font-size:1rem; font-weight:800;">Real-Time Notifications</h4>
-      <button style="background:none; color:var(--primary); font-weight:700; font-size:0.8rem;" onclick="NotificationEngine.markAllRead()">Mark All Read</button>
+      <button style="background:none; color:var(--primary); font-weight:700; font-size:0.8rem;"
+        onclick="NotificationEngine.markAllRead()">Mark All Read</button>
     </div>
     <div id="notif-list-container">
       <!-- Dynamic Notifications -->
@@ -83,54 +92,89 @@
           <div class="welcome-brand">🤝 HELPHUB PLATFORM</div>
           <h1 class="welcome-title">Welcome to HELPHUB</h1>
           <p class="welcome-subtitle">
-            “One Request. Many Helping Hands.” — Log in to access volunteer dashboard, help requests, maps & impact statistics.
+            “One Request. Many Helping Hands.” — Log in to access volunteer dashboard, help requests, maps & impact
+            statistics.
           </p>
         </div>
 
         <div class="welcome-auth-card">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:1rem;">
-            <h3 style="font-size:1.3rem; color:#0f172a; margin:0;" id="portal-title">🔐 Student / Volunteer Portal Login</h3>
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; border-bottom:1px solid #e2e8f0; padding-bottom:1rem;">
+            <h3 style="font-size:1.3rem; color:#0f172a; margin:0;" id="portal-title">🔐 Student / Volunteer Portal Login
+            </h3>
             <span style="font-size:0.85rem; color:#64748b; font-weight:600;">Authentication & Profile Access</span>
           </div>
 
-          <form id="student-volunteer-login-form" onsubmit="event.preventDefault(); App.performPortalLogin();" autocomplete="off">
-            <!-- 1. Full Name -->
-            <div class="form-group">
+          <form id="student-volunteer-login-form" onsubmit="event.preventDefault(); App.performPortalLogin();"
+            autocomplete="off">
+            <!-- 1. Full Name (Registration only - hidden in login mode) -->
+            <div class="form-group" id="portal-name-group" style="display:none;">
               <label>Full Name <span style="color:#ef4444;">*</span></label>
-              <input type="text" id="portal-name" class="form-control" placeholder="Enter your full name" autocomplete="off" required>
+              <input type="text" id="portal-name" class="form-control" placeholder="Enter your full name"
+                autocomplete="off">
             </div>
 
-            <!-- 2. Select Role -->
-            <div class="form-group">
+            <!-- 2. Select Role (Registration only - hidden in login mode) -->
+            <div class="form-group" id="portal-role-group" style="display:none;">
               <label>Select Role <span style="color:#ef4444;">*</span></label>
-              <select id="portal-role" class="form-control" required>
+              <select id="portal-role" class="form-control">
                 <option value="Student">Student</option>
                 <option value="Volunteer" selected>Volunteer</option>
               </select>
             </div>
 
-            <!-- 3. Phone Number -->
-            <div class="form-group">
+            <!-- 3. Phone Number (Registration only - hidden in login mode) -->
+            <div class="form-group" id="portal-phone-group" style="display:none;">
               <label>Phone Number <span style="color:#ef4444;">*</span></label>
-              <input type="tel" id="portal-phone" class="form-control" placeholder="Enter your phone number" autocomplete="off" required>
+              <input type="tel" id="portal-phone" pattern="[0-9]{10}" class="form-control"
+                placeholder="Enter your phone number" autocomplete="off">
+            </div>
+
+            <!-- 3b. Gender (Registration only - hidden in login mode) -->
+            <div class="form-group" id="portal-gender-group" style="display:none;">
+              <label>Gender <span style="color:#ef4444;">*</span></label>
+              <select id="portal-gender" class="form-control" required>
+                <option value="">Select Male / Female</option>
+                <option value="Male">&#9794; Male</option>
+                <option value="Female">&#9792; Female</option>
+              </select>
             </div>
 
             <!-- 4. Enter Your Email Address -->
             <div class="form-group">
               <label>Enter Your Email Address <span style="color:#ef4444;">*</span></label>
-              <input type="email" id="portal-email" class="form-control" placeholder="Enter your email address" autocomplete="off" required>
+              <input type="email" id="portal-email" class="form-control" placeholder="Enter your email address"
+                autocomplete="off" required>
             </div>
 
             <!-- 5. Password -->
             <div class="form-group">
               <label>Password <span style="color:#ef4444;">*</span></label>
-              <input type="password" id="portal-password" class="form-control" placeholder="Enter your password" autocomplete="new-password" required>
+              <input type="password" id="portal-password" class="form-control" placeholder="Enter your password"
+                autocomplete="new-password" required>
             </div>
 
-            <button type="submit" class="btn btn-primary" id="portal-submit-btn" style="width:100%; font-size:1.1rem; padding:0.95rem; margin-top:0.75rem;">
+            <!-- Inline Error / Status Message Banner -->
+            <div id="portal-auth-error"
+              style="display:none; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:0.75rem 1rem; margin-bottom:0.75rem; color:#dc2626; font-size:0.9rem; font-weight:600;">
+              &#9888; <span id="portal-auth-error-msg"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="portal-submit-btn"
+              style="width:100%; font-size:1.1rem; padding:0.95rem; margin-top:0.5rem;">
               🚀 LOG IN & ENTER PLATFORM
             </button>
           </form>
+
+          <!-- Mode Toggle Link -->
+          <div style="text-align:center; margin-top:1.25rem; padding-top:1rem; border-top:1px solid #e2e8f0;">
+            <p style="font-size:0.88rem; color:#64748b; margin:0;">
+              <span id="portal-toggle-hint">Don&#x27;t have an account?</span>
+              <button id="portal-toggle-btn" onclick="App.togglePortalMode()"
+                style="background:none; border:none; color:#2563eb; font-weight:700; font-size:0.88rem; cursor:pointer; padding:0 0.25rem; text-decoration:underline;">Create
+                an account / Register</button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -154,7 +198,8 @@
           </div>
 
           <p class="hero-desc">
-            Connect people and organizations who need help with students and volunteers who are ready to make a difference in society.
+            Connect people and organizations who need help with students and volunteers who are ready to make a
+            difference in society.
           </p>
 
           <div class="hero-stats-row" style="margin-top: 2rem; padding-top: 2rem; flex-wrap: wrap; gap: 1.5rem 2rem;">
@@ -289,7 +334,7 @@
        ========================================================= -->
   <section class="app-section" id="section-requests" style="display:none;">
     <div class="main-wrapper">
-      
+
       <!-- Active Mission & Safety Banner Container -->
       <div id="active-mission-container" style="display:none;">
         <!-- Dynamic Active Mission Banner injected via VolunteerManager -->
@@ -313,7 +358,8 @@
         </div>
 
         <div class="search-filter-box">
-          <input type="text" id="search-requests-input" class="search-input" placeholder="Search by title, location, category...">
+          <input type="text" id="search-requests-input" class="search-input"
+            placeholder="Search by title, location, category...">
         </div>
       </div>
 
@@ -331,7 +377,8 @@
       <div class="section-header">
         <div>
           <h2 class="section-title">Student / Volunteer Dashboard</h2>
-          <p class="section-subtitle">Authenticated profile details, academic records, service statistics, and activity credentials</p>
+          <p class="section-subtitle">Authenticated profile details, academic records, service statistics, and activity
+            credentials</p>
         </div>
         <div style="display:flex; gap:0.75rem;">
           <button class="btn btn-primary" onclick="VolunteerManager.openEditProfileModal()">
@@ -349,20 +396,41 @@
       <!-- Volunteer Profile Overview Card -->
       <div class="profile-card-full">
         <div class="profile-header-flex">
-          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Volunteer" class="profile-img-large" id="profile-img">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:0.6rem;">
+            <div style="position:relative; display:inline-block;">
+              <img src="img/avatar-male.svg"
+                alt="Volunteer" class="profile-img-large" id="profile-img"
+                style="width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid #e2e8f0;">
+              <span id="profile-gender-badge"
+                style="position:absolute; bottom:4px; right:4px; background:#2563eb; color:white; font-size:1rem; border-radius:50%; width:26px; height:26px; display:flex; align-items:center; justify-content:center; border:2px solid white;">&#9794;</span>
+            </div>
+            <button type="button" onclick="VolunteerManager.openChangePhotoDialog()" class="btn btn-outline"
+              style="font-size:0.75rem; color:#2563eb; border-color:#93c5fd; border-radius:20px; padding:0.25rem 0.75rem; cursor:pointer; font-weight:700;">📷 Change Profile Photo</button>
+          </div>
           <div>
-            <h2 style="font-size:1.85rem; color:#0f172a; margin-bottom:0.25rem;" id="profile-name-text">Student Volunteer</h2>
+            <h2 style="font-size:1.85rem; color:#0f172a; margin-bottom:0.25rem;" id="profile-name-text">Student
+              Volunteer</h2>
             <p style="color:#64748b; font-weight:600; margin-bottom:0.5rem;" id="profile-college-text">
-              <span id="profile-dept-header">Computer Science & Engineering</span> • <span id="profile-year-header">3rd Year</span>
+              <span id="profile-dept-header">Computer Science & Engineering</span> • <span id="profile-year-header">3rd
+                Year</span>
             </p>
             <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-              <span style="background:#ecfdf5; color:#10b981; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">
+              <span
+                style="background:#ecfdf5; color:#10b981; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">
                 🟢 VERIFIED ACCOUNT
               </span>
-              <span style="background:#eff6ff; color:#2563eb; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;" id="profile-role-tag">
+              <span
+                style="background:#eff6ff; color:#2563eb; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;"
+                id="profile-role-tag">
                 🎓 VOLUNTEER
               </span>
-              <span style="background:#fef3c7; color:#d97706; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">
+              <span
+                style="background:#eff6ff; color:#2563eb; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;"
+                id="profile-gender-pill">
+                ♂ MALE
+              </span>
+              <span
+                style="background:#fef3c7; color:#d97706; font-size:0.8rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">
                 ⭐ SAFETY RATING: <span id="profile-rating-val">5.0 / 5.0</span>
               </span>
             </div>
@@ -370,25 +438,33 @@
         </div>
 
         <!-- 📈 Profile Completion Status Bar -->
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; margin-bottom:1.75rem;">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
+        <div
+          style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; margin-bottom:1.75rem;">
+          <div
+            style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem; flex-wrap:wrap; gap:0.5rem;">
             <div style="font-weight:800; font-size:0.95rem; color:#0f172a;">
               ✨ Profile Completion Status: <span id="profile-completion-pct" style="color:#2563eb;">100%</span>
             </div>
-            <button class="btn btn-outline" style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:700; color:#2563eb; border-color:#93c5fd;" onclick="VolunteerManager.openEditProfileModal()">
+            <button class="btn btn-outline"
+              style="padding:0.35rem 0.85rem; font-size:0.8rem; font-weight:700; color:#2563eb; border-color:#93c5fd;"
+              onclick="VolunteerManager.openEditProfileModal()">
               ✏️ Complete Your Profile
             </button>
           </div>
           <div style="width:100%; height:8px; background:#e2e8f0; border-radius:99px; overflow:hidden;">
-            <div id="profile-completion-bar" style="width:100%; height:100%; background:linear-gradient(90deg, #2563eb, #10b981); border-radius:99px; transition:width 0.4s ease;"></div>
+            <div id="profile-completion-bar"
+              style="width:100%; height:100%; background:linear-gradient(90deg, #2563eb, #10b981); border-radius:99px; transition:width 0.4s ease;">
+            </div>
           </div>
         </div>
 
         <!-- 🔒 Read-Only System Statistics Grid -->
-        <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:0.75rem; text-transform:uppercase; color:#64748b; letter-spacing:1px;">
+        <h4
+          style="font-size:0.9rem; font-weight:800; margin-bottom:0.75rem; text-transform:uppercase; color:#64748b; letter-spacing:1px;">
           📊 Service & Activity Statistics (Auto-Calculated)
         </h4>
-        <div class="profile-stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom:2rem;">
+        <div class="profile-stats-grid"
+          style="grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); margin-bottom:2rem;">
           <div class="stat-box-modern">
             <div class="num" id="profile-requests-val">15</div>
             <div style="font-size:0.75rem; color:#64748b; font-weight:700;">TOTAL HELP REQUESTS</div>
@@ -412,53 +488,75 @@
         </div>
 
         <!-- Personal & Academic Details Grid -->
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
+        <div
+          style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:1.5rem; margin-bottom:2rem;">
           <!-- 1. Account & Academic Info -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-              <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">👤 Account & Academic Details</h4>
-              <button style="background:none; border:none; color:#2563eb; font-size:0.8rem; font-weight:700; cursor:pointer;" onclick="VolunteerManager.openEditProfileModal()">Edit</button>
+              <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">👤 Account & Academic Details
+              </h4>
+              <button
+                style="background:none; border:none; color:#2563eb; font-size:0.8rem; font-weight:700; cursor:pointer;"
+                onclick="VolunteerManager.openEditProfileModal()">Edit</button>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.85rem;">
               <div><strong>Full Name:</strong> <span id="profile-name-val">Student Volunteer</span></div>
-              <div><strong>Role:</strong> <span id="profile-role-val" style="color:#2563eb; font-weight:700;">Volunteer</span></div>
+              <div><strong>Role:</strong> <span id="profile-role-val"
+                  style="color:#2563eb; font-weight:700;">Volunteer</span></div>
               <div><strong>Phone Number:</strong> <span id="profile-phone-val">+91 9876543210</span></div>
               <div><strong>Email Address:</strong> <span id="profile-email-val">user@campus.edu</span></div>
-              <div><strong>College / Institution:</strong> <span id="profile-college-val">City Tech University</span></div>
+              <div><strong>College / Institution:</strong> <span id="profile-college-val">City Tech University</span>
+              </div>
               <div><strong>Department:</strong> <span id="profile-dept-val">Computer Science & Engineering</span></div>
               <div><strong>Year of Study:</strong> <span id="profile-year-val">3rd Year</span></div>
+              <div><strong>Gender:</strong> <span id="profile-gender-val" style="color:#2563eb; font-weight:600;">Not
+                  specified</span></div>
             </div>
           </div>
 
           <!-- 2. Skills, Availability & Preferences -->
           <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
-              <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">🛠️ Skills, Availability & Preferences</h4>
-              <button style="background:none; border:none; color:#2563eb; font-size:0.8rem; font-weight:700; cursor:pointer;" onclick="VolunteerManager.openEditProfileModal()">Edit</button>
+              <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">🛠️ Skills, Availability &
+                Preferences</h4>
+              <button
+                style="background:none; border:none; color:#2563eb; font-size:0.8rem; font-weight:700; cursor:pointer;"
+                onclick="VolunteerManager.openEditProfileModal()">Edit</button>
             </div>
             <div style="display:flex; flex-direction:column; gap:0.6rem; font-size:0.85rem;">
-              <div><strong>Skills:</strong> <span id="profile-skills-val">First Aid, CPR Certified, Emergency Management, Tutoring</span></div>
-              <div><strong>Areas of Interest:</strong> <span id="profile-interests-val">Healthcare, Education, Environment</span></div>
-              <div><strong>Availability Schedule:</strong> <span id="profile-avail-val">Weekends, Evenings & On-Call Emergencies</span></div>
-              <div><strong>Preferred Help Categories:</strong> <span id="profile-categories-val">Medical Support, Cleanliness, Education</span></div>
-              <div><strong>Location / Area:</strong> <span id="profile-address-val">Room 402, Campus Block B Hostel</span></div>
+              <div><strong>Skills:</strong> <span id="profile-skills-val">First Aid, CPR Certified, Emergency
+                  Management, Tutoring</span></div>
+              <div><strong>Areas of Interest:</strong> <span id="profile-interests-val">Healthcare, Education,
+                  Environment</span></div>
+              <div><strong>Availability Schedule:</strong> <span id="profile-avail-val">Weekends, Evenings & On-Call
+                  Emergencies</span></div>
+              <div><strong>Preferred Help Categories:</strong> <span id="profile-categories-val">Medical Support,
+                  Cleanliness, Education</span></div>
+              <div><strong>Location / Area:</strong> <span id="profile-address-val">Room 402, Campus Block B
+                  Hostel</span></div>
               <div><strong>Emergency Contact:</strong> <span id="profile-emerg-val">+91 9876543299</span></div>
             </div>
           </div>
         </div>
 
         <!-- 3. Bio / Statement -->
-        <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; margin-bottom:2rem;">
+        <div
+          style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:1.25rem; margin-bottom:2rem;">
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
             <h4 style="font-size:0.95rem; font-weight:800; color:#0f172a; margin:0;">📝 Student / Volunteer Bio</h4>
-            <button style="background:none; border:none; color:#2563eb; font-size:0.8rem; font-weight:700; cursor:pointer;" onclick="VolunteerManager.openEditProfileModal()">Edit</button>
+            <button
+              style="background:none; border:none; color:#2563eb; font-size:0.8rem; font-weight:700; cursor:pointer;"
+              onclick="VolunteerManager.openEditProfileModal()">Edit</button>
           </div>
           <p id="profile-bio-val" style="font-size:0.9rem; color:#475569; line-height:1.6; margin:0;">
-            Dedicated student volunteer committed to community health drives, senior citizen support, and campus social activities.
+            Dedicated student volunteer committed to community health drives, senior citizen support, and campus social
+            activities.
           </p>
         </div>
 
-        <h4 style="font-size:0.9rem; font-weight:800; margin-bottom:1rem; text-transform:uppercase; color:#64748b; letter-spacing:1px;">🏆 EARNED BADGES</h4>
+        <h4
+          style="font-size:0.9rem; font-weight:800; margin-bottom:1rem; text-transform:uppercase; color:#64748b; letter-spacing:1px;">
+          🏆 EARNED BADGES</h4>
         <div class="badges-flex">
           <div class="badge-item">
             <div class="badge-icon">🏅</div>
@@ -522,12 +620,14 @@
         </div>
 
         <div class="search-filter-box">
-          <input type="text" class="search-input" placeholder="Search by facility name, address, area..." oninput="MapManager.setSearch(this.value)">
+          <input type="text" class="search-input" placeholder="Search by facility name, address, area..."
+            oninput="MapManager.setSearch(this.value)">
         </div>
       </div>
 
       <!-- Map & Facilities Directory Grid -->
-      <div style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:1.5rem; align-items:start; margin-bottom:2.5rem;">
+      <div
+        style="display:grid; grid-template-columns: 1.1fr 0.9fr; gap:1.5rem; align-items:start; margin-bottom:2.5rem;">
         <!-- Leaflet Map Card -->
         <div class="map-card" style="margin-bottom:0; position:sticky; top:90px;">
           <div class="map-header">
@@ -589,7 +689,8 @@
         <div class="impact-stat-card">
           <div class="impact-icon-wrapper">👥</div>
           <div>
-            <div class="stat-val" id="stat-volunteers" style="font-size:2rem; font-weight:800; color:#0f172a;">300+</div>
+            <div class="stat-val" id="stat-volunteers" style="font-size:2rem; font-weight:800; color:#0f172a;">300+
+            </div>
             <div style="font-size:0.85rem; color:#64748b; font-weight:600;">Registered Volunteers</div>
           </div>
         </div>
@@ -711,12 +812,16 @@
 
       <!-- 👥 REGISTERED MEMBERS SECTION -->
       <div style="margin-bottom:2.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+        <div
+          style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
           <div>
-            <h3 style="font-size:1.3rem; font-weight:800; color:#0f172a; margin:0 0 0.25rem 0;">👥 Registered Members & Directory</h3>
-            <p style="color:#64748b; font-size:0.88rem; margin:0;">Real-time database of authenticated student and volunteer members</p>
+            <h3 style="font-size:1.3rem; font-weight:800; color:#0f172a; margin:0 0 0.25rem 0;">👥 Registered Members &
+              Directory</h3>
+            <p style="color:#64748b; font-size:0.88rem; margin:0;">Real-time database of authenticated student and
+              volunteer members</p>
           </div>
-          <button class="btn btn-outline" style="font-size:0.85rem; padding:0.4rem 0.85rem;" onclick="AdminManager.fetchMembers()">
+          <button class="btn btn-outline" style="font-size:0.85rem; padding:0.4rem 0.85rem;"
+            onclick="AdminManager.fetchMembers()">
             🔄 Refresh Members
           </button>
         </div>
@@ -737,13 +842,15 @@
           </div>
           <div class="impact-stat-card" style="border-left:4px solid #ea580c;">
             <div>
-              <div style="font-size:0.75rem; color:#64748b; font-weight:800; letter-spacing:0.5px;">TOTAL VOLUNTEERS</div>
+              <div style="font-size:0.75rem; color:#64748b; font-weight:800; letter-spacing:0.5px;">TOTAL VOLUNTEERS
+              </div>
               <div style="font-size:1.8rem; font-weight:800; color:#ea580c;" id="admin-total-volunteers">0</div>
             </div>
           </div>
           <div class="impact-stat-card" style="border-left:4px solid #10b981;">
             <div>
-              <div style="font-size:0.75rem; color:#64748b; font-weight:800; letter-spacing:0.5px;">CURRENTLY LOGGED-IN USERS</div>
+              <div style="font-size:0.75rem; color:#64748b; font-weight:800; letter-spacing:0.5px;">CURRENTLY LOGGED-IN
+                USERS</div>
               <div style="font-size:1.8rem; font-weight:800; color:#10b981;" id="admin-loggedin-users">0</div>
             </div>
           </div>
@@ -803,7 +910,8 @@
     <div class="modal-card">
       <button class="modal-close-btn" onclick="App.closeModal('request-modal')">✕</button>
       <h2 style="font-size:1.5rem; margin-bottom:0.5rem; color:#0f172a;">🆘 Create Help Request</h2>
-      <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">Fill out the details below. Nearby volunteers will be alerted immediately.</p>
+      <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">Fill out the details below. Nearby volunteers
+        will be alerted immediately.</p>
 
       <form id="create-request-form">
         <div class="form-group">
@@ -834,17 +942,20 @@
 
         <div class="form-group">
           <label>Title of Help Request</label>
-          <input type="text" name="title" class="form-control" placeholder="e.g. Medical Assistance Needed at Camp" required>
+          <input type="text" name="title" class="form-control" placeholder="e.g. Medical Assistance Needed at Camp"
+            required>
         </div>
 
         <div class="form-group">
           <label>Detailed Description</label>
-          <textarea name="description" class="form-control" rows="3" placeholder="Describe the assistance needed..." required></textarea>
+          <textarea name="description" class="form-control" rows="3" placeholder="Describe the assistance needed..."
+            required></textarea>
         </div>
 
         <div class="form-group">
           <label>Location Landmark / Address</label>
-          <input type="text" name="location_name" class="form-control" placeholder="e.g. Campus Health Center Gate" required>
+          <input type="text" name="location_name" class="form-control" placeholder="e.g. Campus Health Center Gate"
+            required>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
@@ -906,11 +1017,15 @@
 
         <div class="form-group">
           <label>Emergency Details</label>
-          <textarea name="description" class="form-control" rows="3" placeholder="Briefly describe the urgent crisis..." required></textarea>
+          <textarea name="description" class="form-control" rows="3" placeholder="Briefly describe the urgent crisis..."
+            required></textarea>
         </div>
 
-        <div style="background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:0.85rem; font-size:0.8rem; color:#991b1b; margin-bottom:1rem;">
-          <strong>⚠️ SAFETY WARNING:</strong> If this is a life-threatening medical emergency, crime in progress, or fire, please call professional emergency services (<strong>112 / 108</strong>) immediately alongside posting here.
+        <div
+          style="background:#fef2f2; border:1px solid #fca5a5; border-radius:8px; padding:0.85rem; font-size:0.8rem; color:#991b1b; margin-bottom:1rem;">
+          <strong>⚠️ SAFETY WARNING:</strong> If this is a life-threatening medical emergency, crime in progress, or
+          fire, please call professional emergency services (<strong>112 / 108</strong>) immediately alongside posting
+          here.
         </div>
 
         <button type="submit" class="btn btn-primary" style="width:100%; background:#ef4444; border:none;">
@@ -925,39 +1040,48 @@
     <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('college-event-modal')">✕</button>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">🔒 ADMIN ACCESS</span>
+        <span
+          style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">🔒
+          ADMIN ACCESS</span>
         <h2 style="font-size:1.5rem; color:#0f172a; margin:0;">🎓 Create College Volunteer Drive</h2>
       </div>
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
-        Fill in the official drive details below. Required fields are marked with <span style="color:#ef4444; font-weight:bold;">*</span>.
+        Fill in the official drive details below. Required fields are marked with <span
+          style="color:#ef4444; font-weight:bold;">*</span>.
       </p>
 
-      <div id="college-drive-validation-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;"></div>
-      
+      <div id="college-drive-validation-error"
+        style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
+      </div>
+
       <form id="create-college-drive-form" onsubmit="event.preventDefault(); CollegeManager.createEvent(this);">
         <!-- 1 & 2. College Name & Title -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>College / Organization Name <span style="color:#ef4444;">*</span></label>
-            <input type="text" name="organization_name" class="form-control" value="City Tech University" placeholder="e.g. City Tech University" required>
+            <input type="text" name="organization_name" class="form-control" value="City Tech University"
+              placeholder="e.g. City Tech University" required>
           </div>
           <div class="form-group">
             <label>Drive Title <span style="color:#ef4444;">*</span></label>
-            <input type="text" name="title" class="form-control" placeholder="e.g. Campus Health & Hygiene Drive" required>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Campus Health & Hygiene Drive"
+              required>
           </div>
         </div>
 
         <!-- 3. Drive Description -->
         <div class="form-group">
           <label>Drive Description <span style="color:#ef4444;">*</span></label>
-          <textarea name="description" class="form-control" rows="3" placeholder="Describe the objectives and student responsibilities..." required></textarea>
+          <textarea name="description" class="form-control" rows="3"
+            placeholder="Describe the objectives and student responsibilities..." required></textarea>
         </div>
 
         <!-- 4, 5, 6. Date, Start Time, End Time -->
         <div style="display:grid; grid-template-columns:1.2fr 1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Drive Date <span style="color:#ef4444;">*</span></label>
-            <input type="date" name="event_date" id="drive-event-date" class="form-control" min="2026-10-07" value="2026-10-14" required>
+            <input type="date" name="event_date" id="drive-event-date" class="form-control" min="2026-10-07"
+              value="2026-10-14" required>
           </div>
           <div class="form-group">
             <label>Start Time <span style="color:#ef4444;">*</span></label>
@@ -973,7 +1097,8 @@
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Location / Venue <span style="color:#ef4444;">*</span></label>
-            <input type="text" name="location" class="form-control" value="College Main Hall" placeholder="e.g. College Main Hall" required>
+            <input type="text" name="location" class="form-control" value="College Main Hall"
+              placeholder="e.g. College Main Hall" required>
           </div>
           <div class="form-group">
             <label>Drive Category <span style="color:#ef4444;">*</span></label>
@@ -996,11 +1121,13 @@
           </div>
           <div class="form-group">
             <label>Organizer Name <span style="color:#ef4444;">*</span></label>
-            <input type="text" name="organizer_name" class="form-control" value="Prof. K. Ramesh (NSS Coordinator)" placeholder="e.g. Prof. K. Ramesh" required>
+            <input type="text" name="organizer_name" class="form-control" value="Prof. K. Ramesh (NSS Coordinator)"
+              placeholder="e.g. Prof. K. Ramesh" required>
           </div>
           <div class="form-group">
             <label>Contact Information <span style="color:#ef4444;">*</span></label>
-            <input type="text" name="contact_info" class="form-control" value="+91 9876543210" placeholder="+91 9876543210 / info@campus.edu" required>
+            <input type="text" name="contact_info" class="form-control" value="+91 9876543210"
+              placeholder="+91 9876543210 / info@campus.edu" required>
           </div>
         </div>
 
@@ -1008,7 +1135,8 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Registration Deadline <span style="color:#ef4444;">*</span></label>
-            <input type="date" name="registration_deadline" id="drive-deadline-date" class="form-control" value="2026-10-13" required>
+            <input type="date" name="registration_deadline" id="drive-deadline-date" class="form-control"
+              value="2026-10-13" required>
           </div>
           <div class="form-group">
             <label>Drive Status <span style="color:#ef4444;">*</span></label>
@@ -1038,7 +1166,9 @@
     <div class="modal-card" style="max-width:650px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('admin-view-modal')">✕</button>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">🛡️ ADMIN INSPECTOR</span>
+        <span
+          style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">🛡️
+          ADMIN INSPECTOR</span>
         <h2 style="font-size:1.4rem; color:#0f172a; margin:0;" id="admin-view-title">Request Details</h2>
       </div>
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
@@ -1053,10 +1183,12 @@
         <button type="button" class="btn btn-outline" style="flex:1;" onclick="App.closeModal('admin-view-modal')">
           Close
         </button>
-        <button type="button" id="admin-view-edit-btn" class="btn btn-secondary" style="flex:1.2; background:#2563eb; color:white; border:none;">
+        <button type="button" id="admin-view-edit-btn" class="btn btn-secondary"
+          style="flex:1.2; background:#2563eb; color:white; border:none;">
           ✏️ Edit Request
         </button>
-        <button type="button" id="admin-view-del-btn" class="btn btn-outline" style="flex:1; color:#ef4444; border-color:#fca5a5;">
+        <button type="button" id="admin-view-del-btn" class="btn btn-outline"
+          style="flex:1; color:#ef4444; border-color:#fca5a5;">
           🗑️ Delete
         </button>
       </div>
@@ -1068,14 +1200,18 @@
     <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('admin-edit-modal')">✕</button>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="background:#fef3c7; color:#d97706; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️ ADMIN OVERRIDE</span>
+        <span
+          style="background:#fef3c7; color:#d97706; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️
+          ADMIN OVERRIDE</span>
         <h2 style="font-size:1.4rem; color:#0f172a; margin:0;">Edit Help Request</h2>
       </div>
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
         Modify request properties, assign volunteers, or update resolution status.
       </p>
 
-      <div id="admin-edit-validation-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;"></div>
+      <div id="admin-edit-validation-error"
+        style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
+      </div>
 
       <form id="admin-edit-request-form" onsubmit="event.preventDefault(); AdminManager.saveEditRequest(this);">
         <input type="hidden" name="id" id="edit-req-id">
@@ -1141,24 +1277,28 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Assigned Volunteer / Leader</label>
-            <input type="text" name="assigned_volunteer" id="edit-req-assigned-vol" class="form-control" placeholder="e.g. Mohan Das (v1)">
+            <input type="text" name="assigned_volunteer" id="edit-req-assigned-vol" class="form-control"
+              placeholder="e.g. Mohan Das (v1)">
           </div>
 
           <div class="form-group">
             <label>Volunteers Needed <span style="color:#ef4444;">*</span></label>
-            <input type="number" name="volunteers_needed" id="edit-req-vol-needed" class="form-control" min="1" max="100" required>
+            <input type="number" name="volunteers_needed" id="edit-req-vol-needed" class="form-control" min="1"
+              max="100" required>
           </div>
         </div>
 
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Requester Name</label>
-            <input type="text" name="requester_name" id="edit-req-requester-name" class="form-control" placeholder="Requester Name">
+            <input type="text" name="requester_name" id="edit-req-requester-name" class="form-control"
+              placeholder="Requester Name">
           </div>
 
           <div class="form-group">
             <label>Contact Phone Number</label>
-            <input type="text" name="contact_number" id="edit-req-contact-number" class="form-control" placeholder="+91 9876543210">
+            <input type="text" name="contact_number" id="edit-req-contact-number" class="form-control"
+              placeholder="+91 9876543210">
           </div>
         </div>
 
@@ -1184,7 +1324,9 @@
     <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('admin-member-details-modal')">✕</button>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">👤 REGISTERED MEMBER</span>
+        <span
+          style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">👤
+          REGISTERED MEMBER</span>
         <h2 style="font-size:1.4rem; color:#0f172a; margin:0;" id="admin-member-view-title">Member Profile Details</h2>
       </div>
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
@@ -1196,13 +1338,16 @@
       </div>
 
       <div style="display:flex; gap:0.75rem; margin-top:1.5rem; border-top:1px solid #e2e8f0; padding-top:1rem;">
-        <button type="button" class="btn btn-outline" style="flex:1;" onclick="App.closeModal('admin-member-details-modal')">
+        <button type="button" class="btn btn-outline" style="flex:1;"
+          onclick="App.closeModal('admin-member-details-modal')">
           Close
         </button>
-        <button type="button" id="admin-member-view-edit-btn" class="btn btn-secondary" style="flex:1.2; background:#2563eb; color:white; border:none;">
+        <button type="button" id="admin-member-view-edit-btn" class="btn btn-secondary"
+          style="flex:1.2; background:#2563eb; color:white; border:none;">
           ✏️ Edit Member
         </button>
-        <button type="button" id="admin-member-view-del-btn" class="btn btn-outline" style="flex:1; color:#ef4444; border-color:#fca5a5;">
+        <button type="button" id="admin-member-view-del-btn" class="btn btn-outline"
+          style="flex:1; color:#ef4444; border-color:#fca5a5;">
           🗑️ Delete Member
         </button>
       </div>
@@ -1214,14 +1359,18 @@
     <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('admin-member-edit-modal')">✕</button>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="background:#fef3c7; color:#d97706; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️ ADMIN EDIT</span>
+        <span
+          style="background:#fef3c7; color:#d97706; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️
+          ADMIN EDIT</span>
         <h2 style="font-size:1.4rem; color:#0f172a; margin:0;">Edit Registered Member</h2>
       </div>
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
         Update member details and account role. Note: Passwords are protected and not displayed.
       </p>
 
-      <div id="admin-member-edit-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;"></div>
+      <div id="admin-member-edit-error"
+        style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
+      </div>
 
       <form id="admin-member-edit-form" onsubmit="event.preventDefault(); AdminManager.saveMemberEdit(this);">
         <input type="hidden" name="id" id="edit-mem-id">
@@ -1247,7 +1396,8 @@
           </div>
           <div class="form-group">
             <label>Email Address <span style="color:#ef4444;">*</span></label>
-            <input type="email" name="email" id="edit-mem-email" class="form-control" required readonly style="background:#f1f5f9; cursor:not-allowed;">
+            <input type="email" name="email" id="edit-mem-email" class="form-control" required readonly
+              style="background:#f1f5f9; cursor:not-allowed;">
           </div>
         </div>
 
@@ -1285,12 +1435,14 @@
 
         <div class="form-group">
           <label>Skills & Certifications</label>
-          <input type="text" name="skills" id="edit-mem-skills" class="form-control" placeholder="e.g. First Aid, Blood Coordinator, Tutoring">
+          <input type="text" name="skills" id="edit-mem-skills" class="form-control"
+            placeholder="e.g. First Aid, Blood Coordinator, Tutoring">
         </div>
 
         <div class="form-group">
           <label>Emergency Contact</label>
-          <input type="text" name="emergency_contact" id="edit-mem-emergency" class="form-control" placeholder="+91 ...">
+          <input type="text" name="emergency_contact" id="edit-mem-emergency" class="form-control"
+            placeholder="+91 ...">
         </div>
 
         <div class="form-group">
@@ -1299,7 +1451,8 @@
         </div>
 
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
-          <button type="button" class="btn btn-outline" style="flex:1;" onclick="App.closeModal('admin-member-edit-modal')">
+          <button type="button" class="btn btn-outline" style="flex:1;"
+            onclick="App.closeModal('admin-member-edit-modal')">
             Cancel
           </button>
           <button type="submit" class="btn btn-primary" style="flex:1.5; font-size:1rem;">
@@ -1315,16 +1468,21 @@
     <div class="modal-card" style="max-width:680px; max-height:90vh; overflow-y:auto;">
       <button class="modal-close-btn" onclick="App.closeModal('profile-edit-modal')">✕</button>
       <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem;">
-        <span style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️ PROFILE EDITOR</span>
+        <span
+          style="background:#eff6ff; color:#2563eb; font-size:0.75rem; font-weight:800; padding:0.2rem 0.6rem; border-radius:99px;">✏️
+          PROFILE EDITOR</span>
         <h2 style="font-size:1.4rem; color:#0f172a; margin:0;">Complete / Edit Your Profile</h2>
       </div>
       <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.25rem;">
         Update your academic information, skills, availability, and areas of interest.
       </p>
 
-      <div id="profile-edit-validation-error" style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;"></div>
+      <div id="profile-edit-validation-error"
+        style="display:none; background:#fef2f2; border:1px solid #fca5a5; color:#991b1b; padding:0.75rem 1rem; border-radius:10px; font-size:0.85rem; font-weight:700; margin-bottom:1rem;">
+      </div>
 
-      <form id="edit-volunteer-profile-form" onsubmit="event.preventDefault(); VolunteerManager.saveProfileChanges(this);">
+      <form id="edit-volunteer-profile-form"
+        onsubmit="event.preventDefault(); VolunteerManager.saveProfileChanges(this);">
         <input type="hidden" name="id" id="edit-prof-id">
 
         <!-- 1. Full Name & Role -->
@@ -1354,23 +1512,60 @@
           </div>
         </div>
 
-        <!-- 3. Photo URL & College -->
+        <!-- 3. Gender & College -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
-            <label>Profile Photo URL</label>
-            <input type="url" name="avatar" id="edit-prof-avatar" class="form-control" placeholder="https://...">
+            <label>Gender <span style="color:#ef4444;">*</span></label>
+            <select name="gender" id="edit-prof-gender" class="form-control" required
+              onchange="VolunteerManager.onGenderChange(this.value)">
+              <option value="">Select Male / Female</option>
+              <option value="Male">&#9794; Male</option>
+              <option value="Female">&#9792; Female</option>
+            </select>
           </div>
           <div class="form-group">
             <label>College / Institution</label>
-            <input type="text" name="college_name" id="edit-prof-college" class="form-control" placeholder="e.g. City Tech University">
+            <input type="text" name="college_name" id="edit-prof-college" class="form-control"
+              placeholder="e.g. City Tech University">
           </div>
+        </div>
+
+        <!-- 3b. Profile Photo Upload -->
+        <div class="form-group"
+          style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:1rem; margin-bottom:0.5rem;">
+          <label
+            style="font-weight:700; font-size:0.9rem; color:#0f172a; display:block; margin-bottom:0.75rem;">📷
+            Profile Photo</label>
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <img id="edit-prof-avatar-preview" src="" alt="Preview"
+              style="width:70px; height:70px; border-radius:50%; object-fit:cover; border:2px solid #cbd5e1; background:#e2e8f0;">
+            <div style="flex:1; min-width:180px;">
+              <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                <label for="edit-prof-photo-file" class="btn btn-primary"
+                  style="padding:0.4rem 0.85rem; font-size:0.82rem; cursor:pointer; margin:0;">
+                  📷 Change Profile Photo
+                </label>
+                <input type="file" id="edit-prof-photo-file" accept="image/*" style="display:none;"
+                  onchange="VolunteerManager.onPhotoUpload(this)">
+                <button type="button" class="btn btn-outline"
+                  style="padding:0.4rem 0.85rem; font-size:0.82rem; color:#ef4444; border-color:#fca5a5;"
+                  onclick="VolunteerManager.removeCustomPhoto()">
+                  🗑️ Remove Photo
+                </button>
+              </div>
+              <p style="font-size:0.75rem; color:#94a3b8; margin-top:0.4rem;">Upload a custom photo or remove to use
+                the default gender avatar.</p>
+            </div>
+          </div>
+          <input type="hidden" name="avatar" id="edit-prof-avatar">
         </div>
 
         <!-- 4. Department & Year of Study -->
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Department / Major</label>
-            <input type="text" name="department" id="edit-prof-dept" class="form-control" placeholder="e.g. Computer Science & Engineering">
+            <input type="text" name="department" id="edit-prof-dept" class="form-control"
+              placeholder="e.g. Computer Science & Engineering">
           </div>
           <div class="form-group">
             <label>Year of Study</label>
@@ -1388,11 +1583,13 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Skills & Certifications</label>
-            <input type="text" name="skills" id="edit-prof-skills" class="form-control" placeholder="e.g. First Aid, CPR, Teaching, Driving">
+            <input type="text" name="skills" id="edit-prof-skills" class="form-control"
+              placeholder="e.g. First Aid, CPR, Teaching, Driving">
           </div>
           <div class="form-group">
             <label>Areas of Interest</label>
-            <input type="text" name="areas_of_interest" id="edit-prof-interests" class="form-control" placeholder="e.g. Healthcare, Blood Donation, Environment">
+            <input type="text" name="areas_of_interest" id="edit-prof-interests" class="form-control"
+              placeholder="e.g. Healthcare, Blood Donation, Environment">
           </div>
         </div>
 
@@ -1400,11 +1597,13 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Availability Schedule</label>
-            <input type="text" name="availability" id="edit-prof-avail" class="form-control" placeholder="e.g. Weekends, Evenings, On-Call">
+            <input type="text" name="availability" id="edit-prof-avail" class="form-control"
+              placeholder="e.g. Weekends, Evenings, On-Call">
           </div>
           <div class="form-group">
             <label>Preferred Help Categories</label>
-            <input type="text" name="preferred_categories" id="edit-prof-categories" class="form-control" placeholder="e.g. Medical Support, Blood Donation">
+            <input type="text" name="preferred_categories" id="edit-prof-categories" class="form-control"
+              placeholder="e.g. Medical Support, Blood Donation">
           </div>
         </div>
 
@@ -1412,18 +1611,21 @@
         <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:1rem;">
           <div class="form-group">
             <label>Location / Base Area</label>
-            <input type="text" name="address" id="edit-prof-address" class="form-control" placeholder="e.g. Campus Block B Hostel, University Area">
+            <input type="text" name="address" id="edit-prof-address" class="form-control"
+              placeholder="e.g. Campus Block B Hostel, University Area">
           </div>
           <div class="form-group">
             <label>Emergency Contact Phone</label>
-            <input type="tel" name="emergency_contact" id="edit-prof-emerg" class="form-control" placeholder="+91 9876543299">
+            <input type="tel" name="emergency_contact" id="edit-prof-emerg" class="form-control"
+              placeholder="+91 9876543299">
           </div>
         </div>
 
         <!-- 8. Short Bio -->
         <div class="form-group">
           <label>Short Bio / Volunteer Statement</label>
-          <textarea name="bio" id="edit-prof-bio" class="form-control" rows="3" placeholder="Tell the community about your volunteering motivation and experience..."></textarea>
+          <textarea name="bio" id="edit-prof-bio" class="form-control" rows="3"
+            placeholder="Tell the community about your volunteering motivation and experience..."></textarea>
         </div>
 
         <div style="display:flex; gap:1rem; margin-top:1.5rem;">
@@ -1450,9 +1652,11 @@
     <div class="modal-card">
       <button class="modal-close-btn" onclick="App.closeModal('login-modal')">✕</button>
       <h2 style="font-size:1.5rem; margin-bottom:0.5rem; color:#0f172a;">🔐 Login to HELPHUB</h2>
-      <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">Access your volunteer profile or organization dashboard.</p>
-      
-      <form onsubmit="event.preventDefault(); App.closeModal('login-modal'); App.showSuccessAlert('Logged In', 'Welcome back, Mohan Das!');">
+      <p style="color:#64748b; font-size:0.9rem; margin-bottom:1.5rem;">Access your volunteer profile or organization
+        dashboard.</p>
+
+      <form
+        onsubmit="event.preventDefault(); App.closeModal('login-modal'); App.showSuccessAlert('Logged In', 'Welcome back, Mohan Das!');">
         <div class="form-group">
           <label>Enter Your Email Address</label>
           <input type="email" class="form-control" placeholder="Enter your email address" required>
@@ -1471,8 +1675,10 @@
   <!-- =========================================================
        FOOTER
        ========================================================= -->
-  <footer style="background:#0f172a; color:#94a3b8; padding:3rem 2rem 2rem 2rem; margin-top:4rem; border-top:1px solid #1e293b;">
-    <div style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:2rem;">
+  <footer
+    style="background:#0f172a; color:#94a3b8; padding:3rem 2rem 2rem 2rem; margin-top:4rem; border-top:1px solid #1e293b;">
+    <div
+      style="max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:2rem;">
       <div>
         <h3 style="color:white; font-size:1.4rem; margin-bottom:0.75rem;">🤝 HELPHUB</h3>
         <p style="font-size:0.85rem; line-height:1.6;">
@@ -1493,13 +1699,16 @@
       <div>
         <h4 style="color:white; font-size:1rem; margin-bottom:0.75rem;">Key Innovation</h4>
         <p style="font-size:0.85rem; line-height:1.6;">
-          🟢 <strong>Safety Arrival Notification:</strong> Real-time safety status confirmation when volunteers reach help locations.
+          🟢 <strong>Safety Arrival Notification:</strong> Real-time safety status confirmation when volunteers reach
+          help locations.
         </p>
       </div>
     </div>
 
-    <div style="max-width:1200px; margin:2rem auto 0 auto; padding-top:1.5rem; border-top:1px solid #1e293b; text-align:center; font-size:0.8rem; color:#64748b;">
-      © 2026 HELPHUB Platform. “When someone needs help, the right volunteers should know, respond, reach safely, and help together.”
+    <div
+      style="max-width:1200px; margin:2rem auto 0 auto; padding-top:1.5rem; border-top:1px solid #1e293b; text-align:center; font-size:0.8rem; color:#64748b;">
+      © 2026 HELPHUB Platform. “When someone needs help, the right volunteers should know, respond, reach safely, and
+      help together.”
     </div>
   </footer>
 
@@ -1518,4 +1727,5 @@
   <script src="js/app.js"></script>
 
 </body>
+
 </html>
